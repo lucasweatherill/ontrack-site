@@ -3,47 +3,468 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OnTrack — New site coming soon</title>
-<meta name="description" content="OnTrack retirement planning. Our new website is on its way.">
-<meta name="robots" content="noindex">
+<title>RetirementEdge by OnTrack — Every future, simulated</title>
+<meta name="description" content="RetirementEdge is the stochastic retirement engine for advisers, pension funds and institutions. Thousands of futures, every tax rule, every month, fully reproducible.">
 <link rel="icon" type="image/svg+xml" href="brand/ontrack-icon.svg">
-<meta name="theme-color" content="#2568EB">
+<meta name="theme-color" content="#0E1526">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400;1,9..144,700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f8fafc; --surface:#fff; --line:#e2e8f0; --text:#1e293b; --muted:#64748b; --head:#0f172a; --brand:#2568EB; --brand-2:#5B8CF5; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#020617; --surface:#0f172a; --line:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --head:#f8fafc; --brand:#6F9BFF; --brand-2:#9DBBFF; }
+  :root{
+    --paper:#F3EFE6; --paper-2:#E9E3D6; --ink:#0E1526; --ink-2:#3A4256; --muted:#6B7284;
+    --blue:#2568EB; --blue-2:#6F9BFF; --red:#E5484D; --amber:#F2A93B; --line:rgba(14,21,38,.14);
+    --serif:"Fraunces",Georgia,serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; --sans:Inter,system-ui,"Segoe UI",sans-serif;
   }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
-  body { background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-         display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
-  main { max-width: 560px; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
-         padding: 48px 32px; text-align: center; box-shadow: 0 10px 30px rgba(15,23,42,.06); }
-  .logo { color: var(--brand); }
-  .logo-svg { display: block; width: 220px; max-width: 70%; height: auto; margin: 0 auto; }
-  h1 { font-size: clamp(1.6rem, 5vw, 2.1rem); line-height: 1.2; color: var(--head); margin: 28px 0 12px; letter-spacing: -.02em; }
-  p { color: var(--muted); margin: 0 auto; max-width: 42ch; }
-  .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 32px auto 0; max-width: 240px; }
-  .bar span { display: block; height: 100%; width: 40%; border-radius: 3px; background: linear-gradient(90deg, var(--brand), var(--brand-2));
-              animation: slide 2.4s ease-in-out infinite; }
-  @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
-  @media (prefers-reduced-motion: reduce) { .bar span { animation: none; width: 60%; } }
-  footer { margin-top: 36px; font-size: .85rem; color: var(--muted); }
+  *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--sans);overflow-x:hidden}
+  a{color:inherit} img,svg,canvas{display:block}
+  .mono{font-family:var(--mono);font-size:.78rem;letter-spacing:.02em}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  /* ---------- nav ---------- */
+  nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;
+      background:color-mix(in srgb,var(--paper) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav .logo{width:132px;color:var(--blue)}
+  nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0;font-size:.92rem;font-weight:500}
+  nav ul a{text-decoration:none;opacity:.75} nav ul a:hover{opacity:1}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:600;font-size:.92rem;
+       padding:11px 18px;border-radius:999px;border:0;cursor:pointer;transition:transform .15s}
+  .btn:hover{transform:translateY(-2px)} .btn.blue{background:var(--blue);color:#fff}
+  /* ---------- hero ---------- */
+  .hero{position:relative;min-height:100svh;background:var(--ink);color:var(--paper);overflow:hidden;display:flex;align-items:flex-end}
+  #heroCanvas{position:absolute;inset:0;width:100%;height:100%}
+  /* scrim: keeps the copy readable however many futures pile up behind it */
+  .hero::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(90deg,rgba(14,21,38,.6) 0%,rgba(14,21,38,.45) 40%,rgba(14,21,38,0) 62%),
+               linear-gradient(0deg,rgba(14,21,38,.7) 0%,rgba(14,21,38,0) 35%)}
+  @media (max-width:900px){.hero::after{background:linear-gradient(0deg,rgba(14,21,38,.8) 0%,rgba(14,21,38,.55) 60%,rgba(14,21,38,0) 90%)}}
+  .hero-inner{position:relative;z-index:2;padding:140px 24px 64px;max-width:1180px;margin:0 auto;width:100%}
+  .eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--blue-2)}
+  .hero h1{font-family:var(--serif);font-weight:900;font-size:clamp(3rem,9.5vw,8.6rem);line-height:.9;letter-spacing:-.035em;margin:18px 0 24px;max-width:11ch}
+  .hero h1 em{font-weight:400;color:var(--amber)}
+  .hero h1,.hero p.lede,.hero .eyebrow{text-shadow:0 0 3px #0E1526,0 2px 12px rgba(14,21,38,.95),0 0 32px rgba(14,21,38,.9)}
+  .hero .eyebrow{color:#9DBBFF}
+  .hero p.lede{max-width:560px;font-size:1.15rem;color:#C9CEDA;margin:0 0 30px}
+  .hero .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .hero .btn{background:var(--paper);color:var(--ink)} .hero .btn.ghost{background:transparent;color:var(--paper);box-shadow:inset 0 0 0 1px rgba(243,239,230,.4)}
+  .counter{position:absolute;z-index:2;right:24px;top:96px;text-align:right;font-family:var(--mono);color:#8D96AB;font-size:.75rem;line-height:1.5}
+  .counter b{display:block;font-family:var(--serif);font-size:clamp(2rem,4vw,3.4rem);color:var(--paper);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  /* ---------- seed badge ---------- */
+  .seed{position:fixed;left:18px;bottom:18px;z-index:60;background:var(--ink);color:var(--paper);border-radius:14px;padding:10px 12px 10px 14px;
+        display:flex;gap:12px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);font-family:var(--mono);font-size:.72rem;max-width:calc(100vw - 36px)}
+  .seed b{color:var(--amber);font-weight:600}
+  .seed button{all:unset;cursor:pointer;background:var(--blue);color:#fff;border-radius:8px;padding:6px 10px;font-weight:600}
+  .seed button:hover{background:#1d57c9}
+  /* ---------- ticker ---------- */
+  .ticker{background:var(--blue);color:#fff;overflow:hidden;white-space:nowrap;border-block:1px solid var(--ink)}
+  .ticker div{display:inline-block;padding:14px 0;animation:tick 48s linear infinite;font-family:var(--mono);font-size:.85rem}
+  .ticker span{margin:0 28px} .ticker span::before{content:"▲ ";color:#BFD3FF}
+  @keyframes tick{to{transform:translateX(-50%)}}
+  /* ---------- sections ---------- */
+  section{position:relative} .pad{padding:120px 0}
+  .kicker{display:flex;gap:14px;align-items:baseline;margin-bottom:18px}
+  .kicker .n{font-family:var(--mono);color:var(--blue);font-size:.8rem}
+  .kicker .t{font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;font-size:.75rem;color:var(--muted)}
+  h2{font-family:var(--serif);font-weight:900;font-size:clamp(2.3rem,5.6vw,4.6rem);line-height:.98;letter-spacing:-.03em;margin:0 0 22px;max-width:16ch}
+  h2 em{font-weight:400;color:var(--blue)}
+  .lead{font-size:1.15rem;color:var(--ink-2);max-width:640px}
+  /* ---------- not a calculator ---------- */
+  .versus{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:56px;border:1px solid var(--ink)}
+  .versus > div{padding:34px}
+  .versus .them{background:var(--paper-2)} .versus .us{background:var(--ink);color:var(--paper)}
+  .versus h3{font-family:var(--mono);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 18px}
+  .versus ul{list-style:none;margin:0;padding:0} .versus li{padding:10px 0;border-top:1px dashed currentColor;border-color:rgba(127,127,127,.35)}
+  .versus .them li{text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px;color:var(--muted)}
+  .versus .us li::before{content:"→ ";color:var(--blue-2)}
+  .stat74{display:flex;gap:28px;align-items:center;margin-top:56px;flex-wrap:wrap}
+  .stat74 .big{font-family:var(--serif);font-size:clamp(5rem,14vw,11rem);font-weight:900;line-height:.8;color:var(--red);letter-spacing:-.05em}
+  .stat74 p{max-width:460px;margin:0;color:var(--ink-2)}
+  /* ---------- pipeline (sticky, scroll-driven) ---------- */
+  #pipeline{height:560vh;background:var(--ink);color:var(--paper)}
+  .pin{position:sticky;top:0;height:100svh;display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:40px;align-items:center;padding:90px 24px 40px;max-width:1280px;margin:0 auto}
+  .steps{position:relative;min-height:360px}
+  .step{position:absolute;inset:0;opacity:0;transform:translateY(18px);transition:opacity .2s,transform .2s;pointer-events:none}
+  .step.on{transition:opacity .4s .15s,transform .4s .15s}
+  .step.on{opacity:1;transform:none}
+  .step .no{font-family:var(--mono);color:var(--amber);font-size:.8rem;letter-spacing:.1em}
+  .step h3{font-family:var(--serif);font-size:clamp(2rem,3.6vw,3.2rem);line-height:1;margin:10px 0 16px;letter-spacing:-.02em}
+  .step p{color:#C3C9D6;margin:0 0 14px}
+  .step .spec{font-family:var(--mono);font-size:.74rem;color:#8D96AB;border-left:2px solid var(--blue);padding-left:12px}
+  .stage{position:relative;height:min(68vh,560px)}
+  #pipeCanvas{width:100%;height:100%}
+  .rail{display:flex;gap:6px;margin-top:22px} .rail i{flex:1;height:3px;background:rgba(243,239,230,.18);border-radius:2px;overflow:hidden}
+  .rail i b{display:block;height:100%;width:0;background:var(--amber)}
+  .stage .tag{position:absolute;right:0;top:-26px;font-family:var(--mono);font-size:.7rem;color:#8D96AB}
+  /* ---------- rule packs: passport stamps ---------- */
+  .stamps{display:flex;flex-wrap:wrap;gap:26px 30px;margin-top:56px;justify-content:center}
+  .stamp{--rot:0deg;width:210px;padding:18px 16px;border:3px double var(--c,var(--blue));color:var(--c,var(--blue));border-radius:12px;transform:rotate(var(--rot));
+         font-family:var(--mono);text-transform:uppercase;text-align:center;background:rgba(255,255,255,.25);transition:transform .25s;position:relative;mix-blend-mode:multiply}
+  .stamp:hover{transform:rotate(0deg) scale(1.06)}
+  .stamp .cc{font-family:var(--serif);font-size:2.6rem;font-weight:900;letter-spacing:-.02em;line-height:1;text-transform:none}
+  .stamp .nm{font-size:.72rem;letter-spacing:.16em;margin:6px 0 10px;font-weight:600}
+  .stamp .ac{font-size:.62rem;letter-spacing:.06em;line-height:1.5;opacity:.85;text-transform:none}
+  .stamp .vd{position:absolute;right:-10px;top:-12px;background:var(--c,var(--blue));color:var(--paper);font-size:.58rem;padding:3px 7px;border-radius:4px;transform:rotate(8deg)}
+  /* ---------- capabilities grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--ink);border-left:1px solid var(--ink);margin-top:56px}
+  .cell{border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:30px 26px 34px;position:relative;background:var(--paper);transition:background .2s}
+  .cell:hover{background:#fff}
+  .cell .ix{font-family:var(--mono);font-size:.72rem;color:var(--blue)}
+  .cell h4{font-family:var(--serif);font-size:1.6rem;line-height:1.05;margin:12px 0 10px;letter-spacing:-.01em}
+  .cell p{margin:0;color:var(--ink-2);font-size:.96rem}
+  /* ---------- toy ---------- */
+  .toy{background:var(--paper-2);border-block:1px solid var(--ink)}
+  .toybox{display:grid;grid-template-columns:1fr 1.25fr;gap:48px;align-items:center;margin-top:40px}
+  .dial{font-family:var(--serif);font-weight:900;font-size:clamp(5rem,13vw,10rem);line-height:.85;letter-spacing:-.05em;color:var(--blue);font-variant-numeric:tabular-nums}
+  .dial small{display:block;font-size:max(1.05rem,.15em);line-height:1.2;color:var(--ink);letter-spacing:-.01em;font-weight:700;margin-top:10px;max-width:22ch}
+  .ctl{margin:22px 0} .ctl label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.78rem;margin-bottom:8px}
+  .ctl input{width:100%;accent-color:var(--blue)}
+  #toyCanvas{width:100%;height:320px;background:var(--paper);border:1px solid var(--ink);border-radius:4px}
+  .fine{font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-top:10px}
+  /* ---------- audiences ---------- */
+  .aud{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:50px}
+  .aud div{background:var(--ink);color:var(--paper);padding:26px 22px;border-radius:18px 18px 18px 2px;min-height:230px;display:flex;flex-direction:column;justify-content:space-between}
+  .aud div:nth-child(even){transform:translateY(34px)}
+  .aud h4{font-family:var(--serif);font-size:1.5rem;margin:0;line-height:1.05}
+  .aud p{margin:0;font-size:.92rem;color:#C3C9D6}
+  /* ---------- team ---------- */
+  .team{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}
+  .team article{border-top:3px solid var(--ink);padding-top:18px}
+  .team h4{font-family:var(--serif);font-size:1.8rem;margin:0}
+  .team .role{font-family:var(--mono);font-size:.75rem;color:var(--blue);text-transform:uppercase;letter-spacing:.12em}
+  .team p{color:var(--ink-2);font-size:.96rem}
+  /* ---------- cta ---------- */
+  .cta{background:var(--blue);color:#fff;text-align:center;overflow:hidden}
+  .cta h2{margin:0 auto 22px;max-width:18ch;color:#fff} .cta h2 em{color:#0E1526}
+  .cta p{max-width:560px;margin:0 auto 30px;color:#E1E9FF}
+  .cta .btn{background:#fff;color:var(--ink);font-size:1rem;padding:15px 24px}
+  footer{background:var(--ink);color:#8D96AB;padding:46px 0 110px;font-size:.85rem}
+  footer .cols{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+  footer .logo{width:140px;color:var(--paper);margin-bottom:12px}
+  footer .end{font-family:var(--serif);font-style:italic;color:var(--paper);font-size:1.2rem;margin:34px 0 8px}
+  /* ---------- reveal ---------- */
+  .rv{opacity:0;transform:translateY(26px);transition:opacity .8s,transform .8s} .rv.in{opacity:1;transform:none}
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    nav ul{display:none}
+    .versus,.toybox,.team{grid-template-columns:1fr}
+    .grid{grid-template-columns:1fr 1fr} .aud{grid-template-columns:1fr 1fr} .aud div:nth-child(even){transform:none}
+    .pin{grid-template-columns:1fr;grid-template-rows:auto 1fr;gap:16px;padding:76px 16px 20px;align-items:start}
+    .steps{min-height:230px} .step p{font-size:.92rem;margin-bottom:8px} .step .spec{display:none} .stage{height:44svh;min-height:240px}
+    .counter{top:78px}
+  }
+  @media (max-width:560px){ .grid,.aud{grid-template-columns:1fr} .wrap{padding:0 16px} .pad{padding:84px 0} .seed span.long{display:none} }
+  @media (prefers-reduced-motion:reduce){ .ticker div{animation:none} .rv{opacity:1;transform:none;transition:none} }
 </style>
 </head>
 <body>
-<main>
-  <div class="logo">
-    <svg class="logo-svg" viewBox="0 0 126 33" aria-label="OnTrack" role="img">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M19.9165 12.8514C16.413 17.4857 17.8792 24.977 22.973 32.3825C23.1336 32.616 23.4552 32.6717 23.6863 32.5075L36.408 23.4714C37.3309 22.8158 37.5476 21.5362 36.8921 20.6133L28.6556 9.01755C28.5516 8.87115 28.3783 8.78932 28.1995 8.80558C24.6361 9.12937 21.7278 10.4555 19.9165 12.8514ZM10.8933 15.4288C8.71423 18.0616 7.22036 21.0306 6.39361 24.1123C6.27804 24.5431 5.7038 24.6587 5.44552 24.2951L0.494542 17.3248C-0.161006 16.4019 0.0557405 15.1223 0.978658 14.4667L20.3327 0.719588C21.2556 0.0640393 22.5352 0.280787 23.1908 1.20371L26.8738 6.38885C27.1091 6.72008 26.8838 7.18305 26.479 7.21749C20.6526 7.71323 14.9707 10.5027 10.8933 15.4288Z" fill="currentColor"/>
-<path d="M53.4568 17.0745V14.2161C53.4568 12.967 53.1486 11.9582 52.5321 11.1895C51.9155 10.4129 51.0748 10.0245 50.0099 10.0245C48.945 10.0245 48.1123 10.4088 47.5118 11.1775C46.9193 11.9382 46.623 12.951 46.623 14.2161V17.0745C46.623 18.3476 46.9233 19.3725 47.5238 20.1491C48.1323 20.9178 48.965 21.3021 50.0219 21.3021C51.0868 21.3021 51.9235 20.9178 52.5321 20.1491C53.1486 19.3725 53.4568 18.3476 53.4568 17.0745ZM56.6035 14.2401V17.0745C56.6035 19.0282 55.991 20.6296 54.766 21.8786C53.5489 23.1277 51.9636 23.7522 50.0099 23.7522C48.7288 23.7522 47.5918 23.468 46.599 22.8995C45.6062 22.323 44.8375 21.5303 44.293 20.5215C43.7486 19.5046 43.4763 18.3556 43.4763 17.0745V14.2401C43.4763 12.2945 44.0809 10.6971 45.2899 9.44803C46.4989 8.19096 48.0723 7.56242 50.0099 7.56242C51.9556 7.56242 53.5409 8.19096 54.766 9.44803C55.991 10.6971 56.6035 12.2945 56.6035 14.2401ZM65.2149 11.5859C66.4239 11.5859 67.3527 11.9662 68.0012 12.7268C68.6498 13.4875 68.9741 14.6445 68.9741 16.1978V23.5H65.8034V16.1978C65.8034 15.4291 65.6472 14.8767 65.335 14.5404C65.0307 14.2041 64.5503 14.0359 63.8937 14.0359C63.061 14.0359 62.4045 14.3602 61.9241 15.0088V23.5H58.7654V11.802L61.7199 11.814L61.864 13.4955C62.6727 12.2224 63.7896 11.5859 65.2149 11.5859ZM82.4495 7.7666V10.1927H77.9937V23.5H74.8351V10.1927H70.4033V7.7666H82.4495ZM86.3769 23.5H83.2302V11.802H86.1607L86.2928 13.5315C86.8933 12.2344 87.7541 11.5859 88.875 11.5859C89.1472 11.5859 89.4275 11.6299 89.7157 11.718L89.3794 14.5163L88.2265 14.4803C87.3377 14.4803 86.7212 14.8526 86.3769 15.5973V23.5ZM94.2076 23.7522C92.9905 23.7522 92.0497 23.4399 91.3852 22.8154C90.7206 22.1909 90.3883 21.3141 90.3883 20.1852C90.3883 19.0482 90.8287 18.1715 91.7094 17.5549C92.5902 16.9304 93.8793 16.6181 95.5767 16.6181H97.3302V15.6934C97.3302 15.1169 97.1821 14.6765 96.8858 14.3722C96.5896 14.068 96.1692 13.9158 95.6248 13.9158C95.0883 13.9158 94.68 14.0399 94.3997 14.2882C94.1195 14.5364 93.9794 14.8807 93.9794 15.321L90.9288 15.309V15.249C90.8727 14.2321 91.3011 13.3714 92.2139 12.6668C93.1346 11.9622 94.3156 11.6099 95.7569 11.6099C97.2061 11.6099 98.3591 11.9702 99.2158 12.6908C100.073 13.4114 100.501 14.4163 100.501 15.7054V20.5455C100.501 21.5944 100.673 22.5872 101.017 23.524H97.8587C97.6024 22.9315 97.4463 22.347 97.3903 21.7705C96.6216 23.0917 95.5607 23.7522 94.2076 23.7522ZM93.511 20.1251H93.523C93.523 20.5175 93.6511 20.8337 93.9073 21.0739C94.1715 21.3061 94.5478 21.4222 95.0363 21.4222C95.5327 21.4222 95.9971 21.2901 96.4294 21.0259C96.8618 20.7537 97.1581 20.4294 97.3182 20.0531V18.3957H95.5647C94.9082 18.3957 94.3997 18.5598 94.0394 18.8881C93.6871 19.2083 93.511 19.6207 93.511 20.1251ZM105.497 17.5309V17.8672C105.497 20.1812 106.258 21.3382 107.779 21.3382C108.348 21.3382 108.8 21.174 109.136 20.8457C109.473 20.5175 109.641 20.0811 109.641 19.5366H112.511L112.535 19.5967C112.567 20.7817 112.127 21.7745 111.214 22.5752C110.301 23.3679 109.156 23.7642 107.779 23.7642C106.066 23.7642 104.729 23.2278 103.768 22.1549C102.815 21.0739 102.338 19.6447 102.338 17.8672V17.5429C102.338 15.7654 102.815 14.3362 103.768 13.2553C104.729 12.1663 106.066 11.6219 107.779 11.6219C109.228 11.6219 110.389 12.0342 111.262 12.8589C112.143 13.6756 112.567 14.7566 112.535 16.1017L112.523 16.1617H109.641C109.641 15.5452 109.473 15.0408 109.136 14.6485C108.8 14.2481 108.348 14.0479 107.779 14.0479C106.258 14.0479 105.497 15.2089 105.497 17.5309ZM117.495 18.5998V23.5H114.337V6.63764H117.495V16.1978H118.264L120.978 11.802H124.641L120.894 17.0985L125.206 23.5H121.591L118.36 18.5998H117.495Z" fill="currentColor"/>
-</svg>
+
+<!-- ============ NAV ============ -->
+<nav>
+  <a href="#top" aria-label="OnTrack home"><svg class="logo" viewBox="0 0 126 33" role="img" aria-label="OnTrack"><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M19.9165 12.8514C16.413 17.4857 17.8792 24.977 22.973 32.3825C23.1336 32.616 23.4552 32.6717 23.6863 32.5075L36.408 23.4714C37.3309 22.8158 37.5476 21.5362 36.8921 20.6133L28.6556 9.01755C28.5516 8.87115 28.3783 8.78932 28.1995 8.80558C24.6361 9.12937 21.7278 10.4555 19.9165 12.8514ZM10.8933 15.4288C8.71423 18.0616 7.22036 21.0306 6.39361 24.1123C6.27804 24.5431 5.7038 24.6587 5.44552 24.2951L0.494542 17.3248C-0.161006 16.4019 0.0557405 15.1223 0.978658 14.4667L20.3327 0.719588C21.2556 0.0640393 22.5352 0.280787 23.1908 1.20371L26.8738 6.38885C27.1091 6.72008 26.8838 7.18305 26.479 7.21749C20.6526 7.71323 14.9707 10.5027 10.8933 15.4288Z"/><path fill="currentColor" d="M53.4568 17.0745V14.2161C53.4568 12.967 53.1486 11.9582 52.5321 11.1895C51.9155 10.4129 51.0748 10.0245 50.0099 10.0245C48.945 10.0245 48.1123 10.4088 47.5118 11.1775C46.9193 11.9382 46.623 12.951 46.623 14.2161V17.0745C46.623 18.3476 46.9233 19.3725 47.5238 20.1491C48.1323 20.9178 48.965 21.3021 50.0219 21.3021C51.0868 21.3021 51.9235 20.9178 52.5321 20.1491C53.1486 19.3725 53.4568 18.3476 53.4568 17.0745ZM56.6035 14.2401V17.0745C56.6035 19.0282 55.991 20.6296 54.766 21.8786C53.5489 23.1277 51.9636 23.7522 50.0099 23.7522C48.7288 23.7522 47.5918 23.468 46.599 22.8995C45.6062 22.323 44.8375 21.5303 44.293 20.5215C43.7486 19.5046 43.4763 18.3556 43.4763 17.0745V14.2401C43.4763 12.2945 44.0809 10.6971 45.2899 9.44803C46.4989 8.19096 48.0723 7.56242 50.0099 7.56242C51.9556 7.56242 53.5409 8.19096 54.766 9.44803C55.991 10.6971 56.6035 12.2945 56.6035 14.2401ZM65.2149 11.5859C66.4239 11.5859 67.3527 11.9662 68.0012 12.7268C68.6498 13.4875 68.9741 14.6445 68.9741 16.1978V23.5H65.8034V16.1978C65.8034 15.4291 65.6472 14.8767 65.335 14.5404C65.0307 14.2041 64.5503 14.0359 63.8937 14.0359C63.061 14.0359 62.4045 14.3602 61.9241 15.0088V23.5H58.7654V11.802L61.7199 11.814L61.864 13.4955C62.6727 12.2224 63.7896 11.5859 65.2149 11.5859ZM82.4495 7.7666V10.1927H77.9937V23.5H74.8351V10.1927H70.4033V7.7666H82.4495ZM86.3769 23.5H83.2302V11.802H86.1607L86.2928 13.5315C86.8933 12.2344 87.7541 11.5859 88.875 11.5859C89.1472 11.5859 89.4275 11.6299 89.7157 11.718L89.3794 14.5163L88.2265 14.4803C87.3377 14.4803 86.7212 14.8526 86.3769 15.5973V23.5ZM94.2076 23.7522C92.9905 23.7522 92.0497 23.4399 91.3852 22.8154C90.7206 22.1909 90.3883 21.3141 90.3883 20.1852C90.3883 19.0482 90.8287 18.1715 91.7094 17.5549C92.5902 16.9304 93.8793 16.6181 95.5767 16.6181H97.3302V15.6934C97.3302 15.1169 97.1821 14.6765 96.8858 14.3722C96.5896 14.068 96.1692 13.9158 95.6248 13.9158C95.0883 13.9158 94.68 14.0399 94.3997 14.2882C94.1195 14.5364 93.9794 14.8807 93.9794 15.321L90.9288 15.309V15.249C90.8727 14.2321 91.3011 13.3714 92.2139 12.6668C93.1346 11.9622 94.3156 11.6099 95.7569 11.6099C97.2061 11.6099 98.3591 11.9702 99.2158 12.6908C100.073 13.4114 100.501 14.4163 100.501 15.7054V20.5455C100.501 21.5944 100.673 22.5872 101.017 23.524H97.8587C97.6024 22.9315 97.4463 22.347 97.3903 21.7705C96.6216 23.0917 95.5607 23.7522 94.2076 23.7522ZM93.511 20.1251H93.523C93.523 20.5175 93.6511 20.8337 93.9073 21.0739C94.1715 21.3061 94.5478 21.4222 95.0363 21.4222C95.5327 21.4222 95.9971 21.2901 96.4294 21.0259C96.8618 20.7537 97.1581 20.4294 97.3182 20.0531V18.3957H95.5647C94.9082 18.3957 94.3997 18.5598 94.0394 18.8881C93.6871 19.2083 93.511 19.6207 93.511 20.1251ZM105.497 17.5309V17.8672C105.497 20.1812 106.258 21.3382 107.779 21.3382C108.348 21.3382 108.8 21.174 109.136 20.8457C109.473 20.5175 109.641 20.0811 109.641 19.5366H112.511L112.535 19.5967C112.567 20.7817 112.127 21.7745 111.214 22.5752C110.301 23.3679 109.156 23.7642 107.779 23.7642C106.066 23.7642 104.729 23.2278 103.768 22.1549C102.815 21.0739 102.338 19.6447 102.338 17.8672V17.5429C102.338 15.7654 102.815 14.3362 103.768 13.2553C104.729 12.1663 106.066 11.6219 107.779 11.6219C109.228 11.6219 110.389 12.0342 111.262 12.8589C112.143 13.6756 112.567 14.7566 112.535 16.1017L112.523 16.1617H109.641C109.641 15.5452 109.473 15.0408 109.136 14.6485C108.8 14.2481 108.348 14.0479 107.779 14.0479C106.258 14.0479 105.497 15.2089 105.497 17.5309ZM117.495 18.5998V23.5H114.337V6.63764H117.495V16.1978H118.264L120.978 11.802H124.641L120.894 17.0985L125.206 23.5H121.591L118.36 18.5998H117.495Z"/></svg></a>
+  <ul><li><a href="#pipeline">The engine</a></li><li><a href="#packs">Rule packs</a></li><li><a href="#toy">Try it</a></li><li><a href="#who">Who it's for</a></li><li><a href="#team">Team</a></li></ul>
+  <a class="btn blue" href="#contact">Book a demo</a>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+  <div class="counter">FUTURES SIMULATED<br>IN YOUR BROWSER<br>SINCE YOU ARRIVED<b id="futures">0</b></div>
+  <div class="hero-inner">
+    <div class="eyebrow">RetirementEdge · the stochastic retirement engine</div>
+    <h1>We don't predict the future. <em>We run all of them.</em></h1>
+    <p class="lede">Every line behind this text is a possible retirement, generated live by a miniature of our engine. The real one runs thousands of futures per household, month by month, through every tax rule, pension test and market crash history can teach it.</p>
+    <div class="row"><a class="btn" href="#pipeline">See how the future is built ↓</a><a class="btn ghost" href="#contact">Book a demo</a></div>
   </div>
-  <h1>Our new website is on its way</h1>
-  <p>We're building something new to help you plan a confident retirement. Please check back soon.</p>
-  <div class="bar" aria-hidden="true"><span></span></div>
-  <footer>&copy; <span id="y">2026</span> OnTrack</footer>
-</main>
-<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</header>
+
+<div class="ticker" aria-hidden="true"><div>
+  <span>50–80% faster advice delivery, reported by Australian adopters</span><span>7 jurisdictions · 20+ regional rule packs</span><span>CEEMDAN signal decomposition</span><span>Extreme-value tail modelling</span><span>Regime-switching market states</span><span>Every run reproducible from inputs + seed</span><span>Independent actuarial review</span><span>Monthly tax, pension &amp; benefit rules in every simulated path</span><span>White-label in days, not quarters</span>
+  <span>50–80% faster advice delivery, reported by Australian adopters</span><span>7 jurisdictions · 20+ regional rule packs</span><span>CEEMDAN signal decomposition</span><span>Extreme-value tail modelling</span><span>Regime-switching market states</span><span>Every run reproducible from inputs + seed</span><span>Independent actuarial review</span><span>Monthly tax, pension &amp; benefit rules in every simulated path</span><span>White-label in days, not quarters</span>
+</div></div>
+
+<!-- ============ 01 NOT A CALCULATOR ============ -->
+<section class="pad">
+  <div class="wrap">
+    <div class="kicker rv"><span class="n">01</span><span class="t">The problem with calculators</span></div>
+    <h2 class="rv">Most retirement tools draw one straight line. <em>Retirement isn't straight.</em></h2>
+    <div class="stat74 rv">
+      <div class="big">74%</div>
+      <p>The spread in projected retirement income when a 2024 review fed <b>the same household</b> into 22 superannuation fund calculators. Same person. Wildly different futures. A straight-line average with a bell curve stapled on is not a plan; it's a guess wearing a suit.</p>
+    </div>
+    <div class="versus rv">
+      <div class="them"><h3>A typical calculator</h3><ul>
+        <li>One average return, forever</li><li>Bell-curve risk that never crashes properly</li><li>Tax rules approximated once a year</li><li>Everyone dies at the same age</li><li>Different answer every time you ask</li><li>One country, hard-coded</li></ul></div>
+      <div class="us"><h3>RetirementEdge</h3><ul>
+        <li>Thousands of futures built from all the market history you can give it</li><li>Fat tails, volatility clustering and stress regimes preserved</li><li>Tax, pensions and means tests applied every simulated month</li><li>Lifespans personalised for health, lifestyle and couples</li><li>Bit-for-bit reproducible from inputs and seed</li><li>One engine, many countries, rules held as dated, sourced data</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 PIPELINE ============ -->
+<section id="pipeline">
+  <div class="pin">
+    <div>
+      <div class="kicker"><span class="n" style="color:var(--amber)">02</span><span class="t" style="color:#8D96AB">From history to the future · scroll</span></div>
+      <div class="steps">
+        <div class="step" data-s="0"><div class="no">STAGE 1 / 5 — INGEST</div><h3>Start with everything that ever happened.</h3><p>Feed it every month of history you have: returns for every asset class, plus inflation, per market. The more it's given, the more booms, busts and shocks it learns from. Nothing smoothed, nothing thrown away.</p><div class="spec">monthly total returns · CPI · per-jurisdiction currency basis · provenance-hashed source files</div></div>
+        <div class="step" data-s="1"><div class="no">STAGE 2 / 5 — DECOMPOSE</div><h3>Pull the signal apart from the noise.</h3><p>CEEMDAN, an adaptive signal-processing method borrowed from engineering, splits each series into its oscillating components: long trend, business cycles and pure noise. We keep the structure and model the randomness separately.</p><div class="spec">CEEMDAN · 50 noise-assisted realisations · up to 6 intrinsic mode functions · ARIMA artefact diagnostics</div></div>
+        <div class="step" data-s="2"><div class="no">STAGE 3 / 5 — RESPECT THE TAILS</div><h3>Crashes are not 'six-sigma events'.</h3><p>Real markets fall harder and more often than a bell curve allows. Extreme-value theory fits the tails directly, so 1987, 2008 and 2020-style shocks show up in the simulations as often as history says they should.</p><div class="spec">generalised Pareto tail fit · EVT on the extreme decile · no normality assumption</div></div>
+        <div class="step" data-s="3"><div class="no">STAGE 4 / 5 — DETECT REGIMES</div><h3>Calm markets and stressed markets behave differently.</h3><p>The engine learns when history was in a calm state and when it was under stress, then lets simulated futures switch between them. Bad years cluster, just like they do in real life.</p><div class="spec">regime switching · rolling 12-month volatility · stress threshold at 75th percentile</div></div>
+        <div class="step" data-s="4"><div class="no">STAGE 5 / 5 — RESAMPLE THE FUTURE</div><h3>Rebuild thousands of futures, block by block.</h3><p>Whole blocks of real history are stitched together into new, plausible futures, preserving how markets actually move from month to month. Then every household's tax, super, pension and spending rules run inside every path, every month.</p><div class="spec">stationary block bootstrap · seeded, reproducible RNG · monthly tax/pension ledger per path</div></div>
+      </div>
+      <div class="rail" id="rail"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+    </div>
+    <div class="stage"><span class="tag" id="stageTag">illustrative data</span><canvas id="pipeCanvas" aria-label="Animated diagram of the modelling pipeline"></canvas></div>
+  </div>
+</section>
+
+<!-- ============ 03 RULE PACKS ============ -->
+<section class="pad" id="packs">
+  <div class="wrap">
+    <div class="kicker rv"><span class="n">03</span><span class="t">Rule packs</span></div>
+    <h2 class="rv">One engine. <em>A passport full of tax codes.</em></h2>
+    <p class="lead rv">Each country's income tax, retirement accounts and public pensions live in a dated, sourced, verified rule pack, not in code. Entering a new market is a new pack, not a rebuild. Already stamped:</p>
+    <div class="stamps" id="stamps"></div>
+  </div>
+</section>
+
+<!-- ============ 04 CAPABILITIES ============ -->
+<section class="pad" style="padding-top:20px">
+  <div class="wrap">
+    <div class="kicker rv"><span class="n">04</span><span class="t">What's inside</span></div>
+    <h2 class="rv">Absurdly thorough. <em>On purpose.</em></h2>
+    <div class="grid rv">
+      <div class="cell"><div class="ix">04.1</div><h4>The Readiness Score</h4><p>The share of simulated futures in which the money lasts, always shown with its definition and the range behind it. One honest number, thousands of futures deep.</p></div>
+      <div class="cell"><div class="ix">04.2</div><h4>Personalised longevity</h4><p>Lifespans adjusted for health and lifestyle. Couples modelled together, including what happens to the survivor.</p></div>
+      <div class="cell"><div class="ix">04.3</div><h4>Goals that fund themselves</h4><p>Education, a first home, a new car: dated goals funded from surplus, matched to a portfolio by time horizon, tracked on or off course.</p></div>
+      <div class="cell"><div class="ix">04.4</div><h4>Spending that ages</h4><p>Spending shifts through retirement's phases, with optional guardrails that flex when markets misbehave.</p></div>
+      <div class="cell"><div class="ix">04.5</div><h4>Behavioural profiling</h4><p>Risk attitude and motivators measured with a model developed with University of Virginia researchers, in plain language.</p></div>
+      <div class="cell"><div class="ix">04.6</div><h4>Four ways in</h4><p>A guided planner with live "try a change" controls, voice intake that drafts a household from a conversation, an expert editor and a programming interface.</p></div>
+      <div class="cell"><div class="ix">04.7</div><h4>Audit everything</h4><p>An Excel workbook that audits every run, machine-readable results for other systems and a reproducible Readiness Report from a saved snapshot.</p></div>
+      <div class="cell"><div class="ix">04.8</div><h4>Actuarially reviewed</h4><p>Independent actuarial review, accounting reconciliations, primary-source rate verification and regression tests for every market.</p></div>
+      <div class="cell"><div class="ix">04.9</div><h4>Compliance by design</h4><p>Built as an education and general-advice engine that shows assumptions and ranges, ready to extend to personal advice with a licensed partner.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 TOY ============ -->
+<section class="pad toy" id="toy">
+  <div class="wrap">
+    <div class="kicker rv"><span class="n">05</span><span class="t">Play with the future</span></div>
+    <h2 class="rv">Move a slider. <em>Rerun 2,000 futures.</em></h2>
+    <div class="toybox">
+      <div>
+        <div class="dial"><span id="score">–</span><small>% of futures where the money lasts to age 95</small></div>
+        <div class="ctl"><label for="spend"><span>ANNUAL SPENDING</span><span id="spendV"></span></label><input type="range" id="spend" min="30000" max="90000" step="1000" value="52000"></div>
+        <div class="ctl"><label for="age"><span>RETIREMENT AGE</span><span id="ageV"></span></label><input type="range" id="age" min="58" max="70" step="1" value="65"></div>
+        <div class="ctl"><label for="risk"><span>GROWTH ASSETS</span><span id="riskV"></span></label><input type="range" id="risk" min="20" max="90" step="5" value="60"></div>
+        <p class="fine">Toy model: $750k at retirement plus a $22k public pension from 67, fat-tailed returns with stress regimes. The real engine adds tax, pensions, means tests, mortality, couples, goals and real market history.</p>
+      </div>
+      <canvas id="toyCanvas" aria-label="Fan of simulated wealth paths"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 WHO ============ -->
+<section class="pad" id="who">
+  <div class="wrap">
+    <div class="kicker rv"><span class="n">06</span><span class="t">Who it's for</span></div>
+    <h2 class="rv">Your brand on the front. <em>Our engine underneath.</em></h2>
+    <p class="lead rv">RetirementEdge is white-label. Your clients see you; you get an engine that would take a quant team years to build.</p>
+    <div class="aud rv">
+      <div><h4>Financial advisers</h4><p>Fact-find, model and present a strategy in minutes. Adopters reported 50–80% faster advice delivery.</p></div>
+      <div><h4>Pension &amp; super funds</h4><p>Credible, consistent projections for every member, at a cost per member that one-to-one advice can never reach.</p></div>
+      <div><h4>Employers</h4><p>Financial wellness that answers the question staff actually lose sleep over: will I have enough?</p></div>
+      <div><h4>Banks, insurers &amp; platforms</h4><p>Embed the planning brain through an API. Retirement income, annuities, downsizing decisions.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 TEAM ============ -->
+<section class="pad" id="team" style="padding-top:60px">
+  <div class="wrap">
+    <div class="kicker rv"><span class="n">07</span><span class="t">Built by people who managed the money</span></div>
+    <h2 class="rv">Not a fintech experiment. <em>Fifty years of markets.</em></h2>
+    <div class="team">
+      <article class="rv"><div class="role">Founder · Head of Product</div><h4>Lucas Weatherill</h4><p>25+ years in asset management. Former Head of Capital Markets at GIC, Singapore's sovereign wealth fund; founder of Maiora Asset Management; senior roles at Deutsche Bank and Schroders. Has managed liability-matched portfolios for insurers, endowments, pension funds and sovereign wealth funds.</p></article>
+      <article class="rv"><div class="role">Chief Executive Officer</div><h4>Michael Woolley</h4><p>25+ years in financial services at Schroders and Eastspring Investments in Singapore, building long-term partnerships with institutions and representing investment capabilities to them.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="pad cta" id="contact">
+  <div class="wrap">
+    <h2 class="rv">Stop guessing one future. <em>Show them all.</em></h2>
+    <p class="rv">See RetirementEdge run a real household through thousands of futures, live, in your markets.</p>
+    <a class="btn rv" href="mailto:hello@ontrack.com.sg?subject=RetirementEdge%20demo">Book a demo →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="cols">
+      <div><svg class="logo" viewBox="0 0 38 33" role="img" aria-label="OnTrack"><path fill-rule="evenodd" fill="currentColor" d="M19.9165 12.8514C16.413 17.4857 17.8792 24.977 22.973 32.3825C23.1336 32.616 23.4552 32.6717 23.6863 32.5075L36.408 23.4714C37.3309 22.8158 37.5476 21.5362 36.8921 20.6133L28.6556 9.01755C28.5516 8.87115 28.3783 8.78932 28.1995 8.80558C24.6361 9.12937 21.7278 10.4555 19.9165 12.8514ZM10.8933 15.4288C8.71423 18.0616 7.22036 21.0306 6.39361 24.1123C6.27804 24.5431 5.7038 24.6587 5.44552 24.2951L0.494542 17.3248C-0.161006 16.4019 0.0557405 15.1223 0.978658 14.4667L20.3327 0.719588C21.2556 0.0640393 22.5352 0.280787 23.1908 1.20371L26.8738 6.38885C27.1091 6.72008 26.8838 7.18305 26.479 7.21749C20.6526 7.71323 14.9707 10.5027 10.8933 15.4288Z"/></svg>
+        OnTrack Pte. Ltd. · UEN 201707382K<br>31 Leonie Hill #04-01, Singapore 239229</div>
+      <div style="max-width:520px">RetirementEdge provides education and general information. Its projections are estimates based on assumptions and simulated outcomes, are not guaranteed, and are not personal financial advice or filing-ready tax calculations.</div>
+    </div>
+    <p class="end" id="endline">You reached the end of the page.</p>
+    <div>© <span id="yr">2026</span> OnTrack</div>
+  </div>
+</footer>
+
+<div class="seed" role="status"><span>seed <b id="seedV">42</b> <span class="long">· every chart on this page is reproducible</span></span><button id="reroll" type="button">Re-roll the future</button></div>
+
+<script>
+/* ===== seeded RNG: the whole page is reproducible from one seed ===== */
+let SEED=42;
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let R=mulberry(SEED);
+const gauss=r=>{let u=0,v=0;while(!u)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+/* fat-tailed shock: student-t-ish via scale mixture */
+const shock=r=>{const g=gauss(r);const w=r()<.08?2.4:1;return g*w};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const dpr=()=>Math.min(window.devicePixelRatio||1,2);
+function fit(c){const r=c.getBoundingClientRect();c.width=Math.max(1,r.width*dpr());c.height=Math.max(1,r.height*dpr());const x=c.getContext('2d');x.setTransform(dpr(),0,0,dpr(),0,0);return [x,r.width,r.height]}
+
+/* ===== HERO: live monte carlo ===== */
+const hc=document.getElementById('heroCanvas');let hx,hw,hh,futures=0,heroRng;
+function heroReset(){[hx,hw,hh]=fit(hc);hx.fillStyle='#0E1526';hx.fillRect(0,0,hw,hh);heroRng=mulberry(SEED*31+7)}
+function heroPath(){
+  const steps=180,x0=hw*.02,y0=hh*.62,dx=(hw*.98-x0)/steps;let v=0,stress=false;
+  hx.beginPath();hx.moveTo(x0,y0);
+  for(let i=1;i<=steps;i++){
+    if(heroRng()<(stress?.12:.03))stress=!stress;
+    v+= (stress?-0.0025:0.0042)+(stress?0.055:0.028)*shock(heroRng);
+    hx.lineTo(x0+i*dx,y0-v*hh*.42);
+  }
+  const ruined=v<-0.75;
+  hx.strokeStyle=ruined?'rgba(229,72,77,.5)':(heroRng()<.03?'rgba(242,169,59,.55)':'rgba(46,108,235,.32)');
+  hx.lineWidth=ruined?1.3:1.1;hx.stroke();futures++;
+}
+function heroLoop(){
+  if(!document.hidden){
+    hx.fillStyle='rgba(14,21,38,.012)';hx.fillRect(0,0,hw,hh); // steady fade: old futures dissolve, density stays capped
+    for(let k=0;k<6;k++)heroPath();
+    document.getElementById('futures').textContent=futures.toLocaleString();}
+  if(!reduce)requestAnimationFrame(heroLoop);
+}
+
+/* ===== PIPELINE data (synthetic but internally consistent) ===== */
+let P;
+function buildPipe(){
+  const r=mulberry(SEED*97+3),N=600; // 50 years monthly
+  const comps=[[],[],[],[],[]];       // noise, fast, cycle, slow, trend
+  const ph=[r()*6,r()*6,r()*6];
+  let regime=[],st=false,shocks=[];
+  for(let t=0;t<N;t++){
+    if(r()<(st?.07:.018))st=!st;regime.push(st);
+    let n=(st?.055:.026)*shock(r); if(st&&r()<.03)n-=.12+.08*r(); shocks.push(n);
+    comps[0].push(n);
+    comps[1].push(.010*Math.sin(t/3.1+ph[0]));
+    comps[2].push(.014*Math.sin(t/14+ph[1]));
+    comps[3].push(.012*Math.sin(t/55+ph[2]));
+    comps[4].push(.006+.002*Math.sin(t/260));
+  }
+  const series=comps[0].map((_,t)=>comps.reduce((s,c)=>s+c[t],0));
+  // rolling 12m vol + 75th pct threshold
+  const vol=series.map((_,t)=>{const a=series.slice(Math.max(0,t-11),t+1);const m=a.reduce((s,x)=>s+x,0)/a.length;return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/a.length)});
+  const sorted=[...vol].sort((a,b)=>a-b),thr=sorted[Math.floor(.75*sorted.length)];
+  // future fan from block bootstrap (block 24)
+  const fut=[];for(let p=0;p<70;p++){const path=[0];let i=0,v=0;while(i<240){const s=Math.floor(r()*(N-24));for(let k=0;k<24&&i<240;k++,i++){v+=series[s+k];path.push(v)}}fut.push(path)}
+  P={N,comps,series,vol,thr,fut,blocks:[...Array(10)].map(()=>Math.floor(r()*(N-24)))};
+}
+const pc=document.getElementById('pipeCanvas');let px,pw,ph2,stage=-1,local=0;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function line(x,arr,x0,x1,yMid,scale,col,w,from=0,to=arr.length){x.beginPath();for(let i=from;i<to;i++){const X=x0+(i-from)/(to-from-1||1)*(x1-x0),Y=yMid-arr[i]*scale;i===from?x.moveTo(X,Y):x.lineTo(X,Y)}x.strokeStyle=col;x.lineWidth=w;x.stroke()}
+function drawPipe(){
+  if(!px)return;const x=px,W=pw,H=ph2;x.clearRect(0,0,W,H);
+  const L=8,Rr=W-8,mid=H/2,e=ease(Math.min(1,local*1.6));
+  const cum=[];let c=0;for(const v of P.series){c+=v;cum.push(c)}
+  const cmin=Math.min(...cum),cmax=Math.max(...cum);
+  x.font='11px JetBrains Mono, monospace';x.fillStyle='#8D96AB';
+  if(stage===0){ // raw history drawing in
+    const to=Math.max(2,Math.floor(P.N*e));
+    line(x,P.series,L,Rr,H*.72,H*1.6,'rgba(111,155,255,.9)',1,0,to);
+    const sc=(H*.42)/(cmax-cmin);x.beginPath();for(let i=0;i<to;i++){const X=L+i/(P.N-1)*(Rr-L),Y=H*.5-(cum[i]-cmin)*sc;i?x.lineTo(X,Y):x.moveTo(X,Y)}x.strokeStyle='#F3EFE6';x.lineWidth=2;x.stroke();
+    x.fillText('cumulative growth',L,22);x.fillText('monthly returns',L,H*.72-60);x.fillText(`${Math.floor(to/12)} years ingested`,Rr-140,H-10);
+  }else if(stage===1){ // decomposition
+    const names=['noise (IMF 1–2)','fast cycle','business cycle','long cycle','trend'],cols=['#E5484D','#6F9BFF','#6F9BFF','#6F9BFF','#F2A93B'];
+    const top=line(x,P.series,L,Rr,30+ (1-e)*(H/2-30),H*1.1,'rgba(243,239,230,'+(1-e*.5)+')',1);
+    const band=(H-70)/5;
+    P.comps.forEach((cm,k)=>{const yT=60+band*k+band/2;const y=mid+(yT-mid)*e;const s=k===0?H*.9:k===4?H*4:H*1.6;
+      line(x,cm,L,Rr,y,s*(.4+.6*e),cols[k].replace(')',',.9)').replace('#','#'),1.1);x.globalAlpha=e;x.fillText(names[k],L,y-band*.32);x.globalAlpha=1});
+  }else if(stage===2){ // tails histogram
+    const bins=40,lo=-.25,hi=.15,h=new Array(bins).fill(0);P.series.forEach(v=>{const b=Math.min(bins-1,Math.max(0,Math.floor((v-lo)/(hi-lo)*bins)));h[b]++});
+    const mx=Math.max(...h),bw=(Rr-L)/bins,base=H-30;
+    const m=P.series.reduce((s,v)=>s+v,0)/P.N,sd=Math.sqrt(P.series.reduce((s,v)=>s+(v-m)**2,0)/P.N);
+    h.forEach((n,i)=>{const v=lo+(i+.5)/bins*(hi-lo),z=Math.abs(v-m)/sd;x.fillStyle=z>2.2?'#E5484D':'rgba(111,155,255,.8)';const bh=Math.sqrt(n/mx)*(base-40)*e;x.fillRect(L+i*bw+1,base-bh,bw-2,bh)});
+    x.beginPath();for(let i=0;i<=200;i++){const v=lo+i/200*(hi-lo),pdf=Math.exp(-(((v-m)/sd)**2)/2)/(sd*Math.sqrt(2*Math.PI)),n=pdf*P.N*(hi-lo)/bins;const X=L+i/200*(Rr-L),Y=base-Math.sqrt(Math.max(0,n)/mx)*(base-40)*e;i?x.lineTo(X,Y):x.moveTo(X,Y)}
+    x.setLineDash([5,5]);x.strokeStyle='#F3EFE6';x.lineWidth=1.5;x.stroke();x.setLineDash([]);
+    x.fillStyle='#F3EFE6';x.fillText('- - - bell curve (what calculators assume)',L,22);x.fillStyle='#E5484D';x.fillText('■ tail events the bell curve misses',L,40);
+  }else if(stage===3){ // regimes
+    const to=Math.floor(P.N*Math.min(1,.15+e));for(let i=0;i<to;i++){if(P.vol[i]>P.thr){x.fillStyle='rgba(229,72,77,.22)';x.fillRect(L+i/(P.N-1)*(Rr-L),20,(Rr-L)/P.N+1,H-50)}}
+    line(x,P.series,L,Rr,mid,H*1.4,'#F3EFE6',1);
+    line(x,P.vol,L,Rr,H-34,H*3,'#F2A93B',1.5);
+    x.fillStyle='#E5484D';x.fillText('■ stress regime',L,14);x.fillStyle='#F2A93B';x.fillText('— rolling 12m volatility',L+130,14);
+  }else{ // block bootstrap -> fan
+    const split=L+(Rr-L)*.38,hs=H*.55;
+    const sc=(H*.3)/(cmax-cmin);x.beginPath();for(let i=0;i<P.N;i++){const X=L+i/(P.N-1)*(split-L),Y=hs-(cum[i]-cum[P.N-1])*sc;i?x.lineTo(X,Y):x.moveTo(X,Y)}x.strokeStyle='rgba(243,239,230,.8)';x.lineWidth=1.4;x.stroke();
+    P.blocks.forEach((b,k)=>{const X=L+b/(P.N-1)*(split-L),w=24/(P.N-1)*(split-L);x.fillStyle=`rgba(242,169,59,${.25+.25*Math.sin(k)})`;x.fillRect(X,30,w,H-60)});
+    const shown=Math.floor(P.fut.length*e);
+    for(let p=0;p<shown;p++){const f=P.fut[p];x.beginPath();f.forEach((v,i)=>{const X=split+i/(f.length-1)*(Rr-split),Y=hs-v*sc*1.0;i?x.lineTo(X,Y):x.moveTo(X,Y)});const end=f[f.length-1];x.strokeStyle=end<-.6?'rgba(229,72,77,.6)':'rgba(111,155,255,.35)';x.lineWidth=1;x.stroke()}
+    x.strokeStyle='rgba(243,239,230,.35)';x.setLineDash([3,4]);x.beginPath();x.moveTo(split,20);x.lineTo(split,H-20);x.stroke();x.setLineDash([]);
+    x.fillStyle='#8D96AB';x.fillText('history',L,H-8);x.fillText('today',split+6,30);x.fillText(`${shown} of thousands of futures`,Rr-200,H-8);x.fillStyle='#F2A93B';x.fillText('▮ resampled blocks',L,22);
+  }
+}
+function onScroll(){
+  const sec=document.getElementById('pipeline'),r=sec.getBoundingClientRect(),total=sec.offsetHeight-innerHeight;
+  const prog=Math.min(.9999,Math.max(0,-r.top/total)),s=Math.floor(prog*5);local=prog*5-s;
+  if(s!==stage){stage=s;document.querySelectorAll('.step').forEach(el=>el.classList.toggle('on',+el.dataset.s===s))}
+  document.querySelectorAll('#rail b').forEach((b,i)=>b.style.width=(i<s?100:i===s?local*100:0)+'%');
+  drawPipe();
+}
+
+/* ===== RULE PACK STAMPS ===== */
+const PACKS=[
+ ['AU','Australia','Superannuation · Age Pension means tests','#2568EB'],
+ ['CA','Canada','Provinces & territories · RRSP/RRIF · TFSA · CPP · OAS','#E5484D'],
+ ['NZ','New Zealand','KiwiSaver · NZ Super','#0E1526'],
+ ['UK','United Kingdom','England · Scotland · Wales · NI · ISAs · State Pension','#2568EB'],
+ ['HK','Hong Kong','MPF · salaries tax','#E5484D'],
+ ['SG','Singapore','Resident income tax · retirement savings','#0E1526'],
+ ['US','United States','Florida pilot · 401(k) · IRA · Roth · HSA · Social Security','#2568EB']];
+function stamps(){const r=mulberry(SEED*13+1);document.getElementById('stamps').innerHTML=PACKS.map(p=>`<div class="stamp" style="--rot:${(r()*14-7).toFixed(1)}deg;--c:${p[3]}"><span class="vd">VERIFIED · DATED</span><div class="cc">${p[0]}</div><div class="nm">${p[1]}</div><div class="ac">${p[2]}</div></div>`).join('')}
+
+/* ===== TOY MODEL ===== */
+const tc=document.getElementById('toyCanvas');
+function toy(){
+  const spend=+spend_.value,age=+age_.value,g=+risk_.value/100;
+  spendV.textContent='$'+spend.toLocaleString();ageV.textContent=age;riskV.textContent=Math.round(g*100)+'%';
+  const r=mulberry(SEED*1009+age*7+spend+g*1000),yrs=95-age,N=2000,paths=[];let ok=0;
+  const mu=.035+.045*g,sig=.03+.13*g;
+  for(let p=0;p<N;p++){let w=750000,st=false,path=p<120?[w]:null,alive=true;
+    for(let y=0;y<yrs;y++){if(r()<(st?.45:.08))st=!st;const ret=(st?mu-.05:mu)+(st?sig*1.4:sig)*shock(r);w=w*(1+ret)-(spend-(age+y>=67?22000:0))*Math.pow(1.025,y);if(w<=0){w=0;alive=false}if(path)path.push(w)}
+    if(alive)ok++;if(path)paths.push(path)}
+  score.textContent=Math.round(ok/N*100);
+  const [x,W,H]=fit(tc);x.clearRect(0,0,W,H);const mx=2600000;
+  x.strokeStyle='rgba(14,21,38,.12)';x.beginPath();x.moveTo(36,H-24);x.lineTo(W-8,H-24);x.stroke();
+  paths.forEach(pt=>{x.beginPath();pt.forEach((v,i)=>{const X=36+i/yrs*(W-50),Y=H-24-Math.min(v,mx)/mx*(H-40);i?x.lineTo(X,Y):x.moveTo(X,Y)});x.strokeStyle=pt[pt.length-1]<=0?'rgba(229,72,77,.45)':'rgba(37,104,235,.22)';x.lineWidth=1;x.stroke()});
+  x.fillStyle='#6B7284';x.font='11px JetBrains Mono, monospace';x.fillText('age '+age,36,H-8);x.fillText('95',W-24,H-8);x.fillText('$0',4,H-22);
+}
+const spend_=document.getElementById('spend'),age_=document.getElementById('age'),risk_=document.getElementById('risk');
+const spendV=document.getElementById('spendV'),ageV=document.getElementById('ageV'),riskV=document.getElementById('riskV'),score=document.getElementById('score');
+[spend_,age_,risk_].forEach(i=>i.addEventListener('input',toy));
+
+/* ===== seed + misc ===== */
+function all(){R=mulberry(SEED);document.getElementById('seedV').textContent=SEED;heroReset();buildPipe();[px,pw,ph2]=fit(pc);onScroll();stamps();toy();
+  const pct=(2+((SEED*7)%60)/10).toFixed(1);document.getElementById('endline').textContent=`You reached the end of the page. In ${pct}% of simulated futures, you didn't scroll this far.`}
+document.getElementById('reroll').addEventListener('click',()=>{SEED=Math.floor(Math.random()*9000)+100;futures=0;all();for(let k=0;k<220;k++)heroPath()});
+addEventListener('scroll',onScroll,{passive:true});
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{heroReset();[px,pw,ph2]=fit(pc);drawPipe();toy()},150)});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+document.getElementById('yr').textContent=new Date().getFullYear();
+all();for(let k=0;k<(reduce?400:220);k++)heroPath();document.getElementById('futures').textContent=futures.toLocaleString();if(!reduce)requestAnimationFrame(heroLoop);
+</script>
 </body>
 </html>
