@@ -6,10 +6,12 @@
 <title>OnTrack — New site coming soon</title>
 <meta name="description" content="OnTrack retirement planning. Our new website is on its way.">
 <meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="brand/ontrack-icon.svg">
+<meta name="theme-color" content="#2F6BEF">
 <style>
-  :root { --bg:#f8fafc; --surface:#fff; --line:#e2e8f0; --text:#1e293b; --muted:#64748b; --head:#0f172a; --brand:#4338ca; --brand-2:#6366f1; --accent:#fbbf24; }
+  :root { --bg:#f8fafc; --surface:#fff; --line:#e2e8f0; --text:#1e293b; --muted:#64748b; --head:#0f172a; --brand:#2F6BEF; --brand-2:#5B8CF5; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#020617; --surface:#0f172a; --line:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --head:#f8fafc; --brand:#a5b4fc; --brand-2:#818cf8; }
+    :root { --bg:#020617; --surface:#0f172a; --line:#1e293b; --text:#e2e8f0; --muted:#94a3b8; --head:#f8fafc; --brand:#6F9BFF; --brand-2:#9DBBFF; }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
@@ -17,8 +19,8 @@
          display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
   main { max-width: 560px; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
          padding: 48px 32px; text-align: center; box-shadow: 0 10px 30px rgba(15,23,42,.06); }
-  .logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.5rem; color: var(--head); letter-spacing: -.01em; }
-  .mark { width: 36px; height: 36px; }
+  .logo { display: inline-flex; align-items: center; gap: 12px; font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; font-weight: 700; font-size: 2rem; color: var(--brand); letter-spacing: -.02em; }
+  .mark { width: 44px; height: 44px; }
   h1 { font-size: clamp(1.6rem, 5vw, 2.1rem); line-height: 1.2; color: var(--head); margin: 28px 0 12px; letter-spacing: -.02em; }
   p { color: var(--muted); margin: 0 auto; max-width: 42ch; }
   .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 32px auto 0; max-width: 240px; }
@@ -32,11 +34,14 @@
 <body>
 <main>
   <div class="logo">
-    <svg class="mark" viewBox="0 0 36 36" aria-hidden="true">
-      <circle cx="18" cy="18" r="16" fill="none" stroke="var(--brand)" stroke-width="3"/>
-      <path d="M10 22 L16 15 L21 19 L27 11" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <defs><clipPath id="ot-clip"><rect width="64" height="64" rx="16"/></clipPath></defs>
+      <g clip-path="url(#ot-clip)">
+        <rect width="64" height="64" fill="var(--brand)"/>
+        <path d="M-4 30 C 12 26, 24 16, 30 -4" fill="none" stroke="var(--surface)" stroke-width="8" stroke-linecap="round"/>
+      </g>
     </svg>
-    OnTrack
+    <span class="word">OnTrack</span>
   </div>
   <h1>Our new website is on its way</h1>
   <p>We're building something new to help you plan a confident retirement. Please check back soon.</p>
