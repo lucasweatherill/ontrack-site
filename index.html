@@ -106,7 +106,41 @@
   /* ---------- capabilities grid ---------- */
   .grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--ink);border-left:1px solid var(--ink);margin-top:56px}
   .cell{border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:30px 26px 34px;position:relative;background:var(--paper);transition:background .2s}
-  .cell:hover{background:#fff}
+  .cell{cursor:pointer;outline:none}
+  .cell::after{content:"+";position:absolute;top:20px;right:22px;width:30px;height:30px;border:1px solid var(--ink);border-radius:50%;display:grid;place-items:center;
+     font:400 1.2rem/1 var(--mono);transition:transform .3s,background .2s,color .2s}
+  .cell:hover,.cell:focus-visible{background:#fff} .cell:hover::after,.cell:focus-visible::after{transform:rotate(90deg);background:var(--blue);border-color:var(--blue);color:#fff}
+  .cell:focus-visible{box-shadow:inset 0 0 0 3px var(--blue)}
+  .cell .more{display:block;margin-top:16px;font-family:var(--mono);font-size:.72rem;color:var(--blue);letter-spacing:.04em}
+  .gridhint{margin-top:14px;color:var(--muted)}
+  /* ---------- spec sheet ---------- */
+  #spec{padding:0;border:0;margin:0 0 0 auto;height:100dvh;max-height:100dvh;width:min(560px,100vw);max-width:100vw;background:transparent;color:var(--paper)}
+  #spec::backdrop{background:rgba(14,21,38,.55);backdrop-filter:blur(3px)}
+  #spec[open] .sheet{animation:slideIn .38s cubic-bezier(.2,.8,.2,1)}
+  @keyframes slideIn{from{transform:translateX(100%)}to{transform:none}}
+  .sheet{height:100%;display:flex;flex-direction:column;background:var(--ink);
+     background-image:linear-gradient(rgba(111,155,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(111,155,255,.07) 1px,transparent 1px);background-size:28px 28px}
+  .sbar{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-bottom:1px solid rgba(243,239,230,.14);color:var(--blue-2)}
+  .sbar .x{background:none;border:1px solid rgba(243,239,230,.3);color:var(--paper);width:38px;height:38px;border-radius:50%;font-size:1.4rem;line-height:1;cursor:pointer}
+  .sbar .x:hover{background:var(--paper);color:var(--ink)}
+  .sbody{flex:1;overflow-y:auto;padding:30px 26px 34px}
+  .sbody .big{font:900 5.5rem/0.8 var(--serif);color:transparent;-webkit-text-stroke:1px var(--blue-2);letter-spacing:-.04em;margin-bottom:18px}
+  .sbody h3{font:700 2.3rem/1.02 var(--serif);margin:0 0 16px;letter-spacing:-.015em}
+  .sbody .lead{font-size:1.05rem;color:#D6DCEA;margin:0 0 26px}
+  .sbody h5{font:600 .72rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin:0 0 10px}
+  .sbody dl{margin:0 0 26px;border-top:1px solid rgba(243,239,230,.14)}
+  .sbody dl div{display:grid;grid-template-columns:130px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid rgba(243,239,230,.14)}
+  .sbody dt{font-family:var(--mono);font-size:.75rem;color:var(--blue-2);padding-top:3px} .sbody dd{margin:0;font-size:.95rem}
+  .sbody .so{border-left:3px solid var(--amber);padding:4px 0 4px 16px;font:italic 400 1.25rem/1.35 var(--serif);margin:0}
+  .snav{display:flex;border-top:1px solid rgba(243,239,230,.14)}
+  .snav button{flex:1;background:none;border:0;color:var(--paper);font:500 .85rem var(--sans);padding:18px 20px;cursor:pointer;text-align:left}
+  .snav button+button{text-align:right;border-left:1px solid rgba(243,239,230,.14)} .snav button:hover{background:rgba(243,239,230,.07)}
+  @media (max-width:640px){
+    #spec{margin:auto 0 0;width:100vw;height:88dvh}
+    #spec[open] .sheet{animation-name:slideUp;border-radius:18px 18px 0 0} @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+    .sbody .big{font-size:4rem} .sbody h3{font-size:1.9rem} .sbody dl div{grid-template-columns:1fr;gap:2px}
+  }
+  @media (prefers-reduced-motion:reduce){#spec[open] .sheet{animation:none}}
   .cell .ix{font-family:var(--mono);font-size:.72rem;color:var(--blue)}
   .cell h4{font-family:var(--serif);font-size:1.6rem;line-height:1.05;margin:12px 0 10px;letter-spacing:-.01em}
   .cell p{margin:0;color:var(--ink-2);font-size:.96rem}
@@ -254,8 +288,17 @@
       <div class="cell"><div class="ix">04.8</div><h4>Actuarially reviewed</h4><p>Independent actuarial review, accounting reconciliations, primary-source rate verification and regression tests for every market.</p></div>
       <div class="cell"><div class="ix">04.9</div><h4>Compliance by design</h4><p>Built as an education and general-advice engine that shows assumptions and ranges, ready to extend to personal advice with a licensed partner.</p></div>
     </div>
+    <p class="mono rv gridhint">Select any capability to open its spec sheet.</p>
   </div>
 </section>
+
+<dialog id="spec" aria-labelledby="specTitle">
+  <div class="sheet">
+    <div class="sbar"><span class="mono" id="specIx">04.1 / 09</span><button class="x" type="button" id="specClose" aria-label="Close">×</button></div>
+    <div class="sbody" id="specBody"></div>
+    <div class="snav"><button type="button" id="specPrev">← <span></span></button><button type="button" id="specNext"><span></span> →</button></div>
+  </div>
+</dialog>
 
 <!-- ============ 05 TOY ============ -->
 <section class="pad toy" id="toy">
@@ -485,6 +528,63 @@ let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{heroRe
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
 document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 document.getElementById('yr').textContent=new Date().getFullYear();
+
+/* ---------- 04 spec sheets: every capability cell opens a detail panel ---------- */
+const SPECS=[
+ {lead:'One number a client actually understands: the share of thousands of simulated futures in which their money lasts. Never a bare percentage. It always arrives with what it means and the full spread behind it.',
+  rows:[['Futures per run','Thousands, each simulated month by month'],['What varies','Market returns, inflation, interest rates and lifespans, all at once'],['Shown with','Its definition, the range of outcomes, and the ages money runs out in the bad futures'],['Reproducible','Same inputs and seed give the same score, bit for bit']],
+  so:'A guess becomes a probability your client can feel.'},
+ {lead:'Nobody retires to an average lifespan. Every simulated future draws its own lifespans, adjusted for the person in front of you, so living longer than expected is priced into the plan instead of ignored.',
+  rows:[['Adjusted for','Health and lifestyle factors'],['Couples','Modelled together, each partner with their own lifespan'],['Survivor','Income, pensions, tax and spending re-set when one partner dies'],['Long-life risk','Measured directly in the Readiness Score']],
+  so:'Plan for living too long, not for dying on schedule.'},
+ {lead:'Retirement is not the only thing families save for. Dated goals sit inside the same engine, so school fees, a first home and a new car compete for the same dollars as retirement, just like in real life.',
+  rows:[['Goal types','Spending goals, paid out on their date; investment goals, kept as wealth'],['Funded from','Monthly surplus income, simulated month by month'],['Portfolio','Matched to each goal by its time horizon'],['Reported','On or off track, and the monthly saving needed to get there']],
+  so:'Every goal gets its own forecast, not a line in a spreadsheet.'},
+ {lead:'People spend differently at 66, 76 and 86. RetirementEdge lets spending change through retirement\'s phases, and can flex it when markets turn hostile, the way real retirees do.',
+  rows:[['Phases','Different spending levels for each stage of retirement'],['Guardrails','Optional: trim spending after bad markets, restore it after good ones'],['Every month','Spending tested against tax, pensions and balances in every future'],['Inflation','Spending indexed so today\'s lifestyle keeps its value']],
+  so:'A spending plan that behaves like a person, not a constant.'},
+ {lead:'Two clients with identical balances can need completely different plans. Our profiling measures how each person feels about risk and what actually motivates them, then puts it in plain language.',
+  rows:[['Measures','Attitude to risk and personal motivators'],['Science','A behavioural model developed with University of Virginia researchers'],['Format','A self-directed questionnaire clients complete on their own'],['Used for','Tailoring conversations and engagement to each client type']],
+  so:'Know the person before you model the money.'},
+ {lead:'Clients arrive in different ways, so RetirementEdge offers four doors into the same engine, from a friendly guided walkthrough to a direct connection for your own systems.',
+  rows:[['Guided planner','Step by step, with live "try a change" controls'],['Voice intake','Drafts a household from a short spoken conversation, with a privacy-first local mode'],['Expert editor','Every input, for analysts who want full control'],['API & import','A programming interface and file import for existing systems']],
+  so:'However the client shows up, the engine is ready.'},
+ {lead:'Every number on screen can be traced. Each run produces a complete, auditable record, so a regulator, a licensee or a sceptical client can see exactly how the answer was reached.',
+  rows:[['Excel workbook','Audits every run, month by month'],['Machine-readable','Structured results for other software to consume'],['Readiness Report','A 12–14 page report, reproducible from a saved plan snapshot'],['Record keeping','Automated, with saved inputs that never change']],
+  so:'If you can\'t audit it, you can\'t trust it. So we made everything auditable.'},
+ {lead:'Retirement modelling is only as good as its rules and its maths. Ours have been checked by people whose job is to find mistakes, and checked again by tests that run every time the engine changes.',
+  rows:[['Actuarial','Independent actuarial review of the simulation engine'],['Accounting','Cash reconciled through every simulated month'],['Rates','Tax and benefit rates verified against primary sources, each with a date and source'],['Testing','Regression tests for every market']],
+  so:'Built to survive the toughest review in the room.'},
+ {lead:'RetirementEdge explains rather than instructs. It shows assumptions, ranges and comparisons, which keeps it on the right side of the advice line in every market, with a clear path to personal advice when you want it.',
+  rows:[['Out of the box','Education and general-advice use'],['On screen','Assumptions, ranges, and what is not covered'],['Personal advice','Extend with a licensed partner for licence, supervision and record keeping'],['Disclosures','Built into every screen and report']],
+  so:'Compliance designed in from day one, not bolted on.'}];
+(function(){
+  const cells=[...document.querySelectorAll('.grid .cell')], dlg=document.getElementById('spec'), body=document.getElementById('specBody'),
+        ix=document.getElementById('specIx'), prev=document.getElementById('specPrev'), next=document.getElementById('specNext');
+  let cur=0, opener=null;
+  const title=i=>cells[i].querySelector('h4').textContent;
+  function show(i){
+    cur=(i+cells.length)%cells.length;const s=SPECS[cur];
+    ix.textContent='04.'+(cur+1)+' / 0'+cells.length;
+    body.innerHTML='<div class="big">0'+(cur+1)+'</div><h3 id="specTitle">'+title(cur)+'</h3><p class="lead">'+s.lead+'</p><h5>Under the hood</h5><dl>'+
+      s.rows.map(r=>'<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>').join('')+'</dl><p class="so">'+s.so+'</p>';
+    body.scrollTop=0;
+    prev.querySelector('span').textContent=title((cur-1+cells.length)%cells.length);
+    next.querySelector('span').textContent=title((cur+1)%cells.length);
+  }
+  cells.forEach((c,i)=>{
+    c.setAttribute('role','button');c.tabIndex=0;c.setAttribute('aria-haspopup','dialog');
+    c.insertAdjacentHTML('beforeend','<span class="more">OPEN SPEC SHEET →</span>');
+    const open=()=>{opener=c;show(i);dlg.showModal();document.documentElement.style.overflow='hidden'};
+    c.addEventListener('click',open);
+    c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});
+  });
+  prev.onclick=()=>show(cur-1); next.onclick=()=>show(cur+1);
+  document.getElementById('specClose').onclick=()=>dlg.close();
+  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+  dlg.addEventListener('keydown',e=>{if(e.key==='ArrowRight')show(cur+1);if(e.key==='ArrowLeft')show(cur-1)});
+  dlg.addEventListener('close',()=>{document.documentElement.style.overflow='';cells[cur].focus({preventScroll:true});});
+})();
 
 /* ---------- demo form: Web3Forms relays it to OnTrack's inbox (the key is public by design; the address stays hidden) ---------- */
 const WEB3FORMS_KEY='31b5b9f3-a109-4374-9890-c0ad2d5c568d';
