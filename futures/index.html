@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Thousand Futures · RetirementEdge</title>
+<meta name="description" content="One retirement plan, 1,000 possible futures. Step through how RetirementEdge works out a readiness score.">
+<meta property="og:title" content="A Thousand Futures">
+<meta property="og:description" content="One retirement plan, 1,000 possible futures. Step through how RetirementEdge works out a readiness score.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.ontrack.com.sg/futures/">
+<meta name="theme-color" content="#020617">
+<link rel="icon" type="image/svg+xml" href="../brand/ontrack-icon.svg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one full-window chart on the brand's dark ground (slate 950). Words top-left, logo and controls in the bottom corners.
+   Colours and type follow ux-prototype/brand/brand-guide.html v1.0: indigo is the brand, slate does the quiet work,
+   rose marks futures where money runs short, always with a word, drawn like the planner's answer-screen dots. */
+:root{
+  --bg:#020617;        /* slate 950, page background on dark */
+  --surface:#0f172a;   /* slate 900 */
+  --line:#1e293b;      /* slate 800, borders on dark */
+  --text:#e2e8f0;      /* slate 200 */
+  --muted:#94a3b8;     /* slate 400 */
+  --head:#f8fafc;      /* slate 50 */
+  --brand:#a5b4fc;     /* indigo 300, brand text on dark */
+  --brand-ink:#818cf8; /* indigo 400 */
+  --brand-500:#6366f1; /* indigo 500, chart lines */
+  --dot:#a5b4fc;       /* indigo 300, as the planner's answer screen: a future where money lasts */
+  --short:#fda4af;     /* rose 300 ring, as the planner's answer screen: a future where money runs short */
+  --panel:rgba(15,23,42,.95);
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;overflow:hidden;background:var(--bg);color:var(--text);font:400 16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none;cursor:pointer}
+#stage:focus-visible{box-shadow:inset 0 0 0 2px rgba(129,140,248,.6)}
+.layer{position:fixed;inset:0;pointer-events:none}
+#axes{transition:opacity .8s}
+
+#copy{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + clamp(20px,6vh,64px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+#copy .wrap{margin-left:clamp(0px,6vw - 16px,96px);max-width:min(820px,100%);display:grid;gap:12px;transition:opacity .45s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+#copy.out .wrap{opacity:0;transform:translateY(10px)}
+.eyebrow{font:600 12px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
+h1{margin:0;font:700 clamp(30px,4.6vw,56px)/1.08 var(--sans);letter-spacing:-.02em;color:var(--head);text-wrap:balance}
+h1 em{font-style:normal;color:var(--brand)}
+.sub{margin:0;max-width:60ch;font-size:clamp(16px,1.4vw,18px);color:var(--muted);text-wrap:pretty}
+.num{font-weight:600;font-variant-numeric:tabular-nums;color:var(--text)}
+.short{color:var(--short)}
+
+.tick{position:absolute;font:500 12px/1 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums;transform:translateX(-50%)}
+.ylab{position:absolute;font:500 12px/1 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums;transform:translate(-100%,-140%)}
+.cap{position:absolute;font:400 12px/1.3 var(--sans);color:var(--muted);white-space:nowrap}
+.grid{position:absolute;height:0;border-top:1px dashed var(--line)}
+.base{position:absolute;height:0;border-top:1px solid #334155}
+.ret{position:absolute;width:0;border-left:1px dashed #334155}
+.head{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--brand-500),0 0 26px 6px rgba(99,102,241,.6);transition:opacity .5s}
+.head.pulse{animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 3px var(--brand-500),0 0 40px 14px rgba(99,102,241,.45)}}
+.readout{position:absolute;font:600 13px/1.3 var(--sans);color:var(--head);white-space:nowrap;font-variant-numeric:tabular-nums;transform:translate(14px,-150%);transition:opacity .5s;text-shadow:0 1px 8px var(--bg)}
+.readout span{color:var(--muted);font-weight:500}
+.mark{position:absolute;font:600 12px/1.2 var(--sans);color:var(--short);white-space:nowrap;transform:translate(-50%,-100%);padding-bottom:6px;border-bottom:1px solid currentColor;transition:opacity .6s}
+.legend{position:absolute;display:flex;gap:16px;flex-wrap:wrap;font:500 13px/1.2 var(--sans);color:var(--text);transition:opacity .6s}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px;background:var(--dot)}
+.legend i.o{background:transparent;box-shadow:inset 0 0 0 2px var(--short)}
+.fade{opacity:0!important}
+
+#foot{position:fixed;left:0;right:0;bottom:0;display:grid!important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);padding:0 max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px));display:flex;align-items:flex-end;justify-content:space-between;gap:16px;pointer-events:none}
+#foot .left{display:grid;gap:6px;min-width:0}
+#foot svg{height:24px;width:auto;display:block}
+.hint{font:500 13px/1.3 var(--sans);color:var(--text);transition:opacity 1s}
+.small{font-size:12px;color:var(--muted);line-height:1.4;max-width:70ch}
+#dots{display:flex;gap:4px;pointer-events:auto;flex:none;justify-self:end}
+.logo{pointer-events:auto;display:inline-block;width:max-content;border-radius:6px}
+.logo:focus-visible,#ctrl button:focus-visible{outline:2px solid rgba(129,140,248,.6);outline-offset:2px}
+.mid{display:grid;gap:10px;justify-items:center;pointer-events:auto}
+#howto{margin:0;max-width:44ch;text-align:center;font-size:14px;line-height:1.45;color:var(--text);transition:opacity .5s}
+#howto b{color:var(--head);font-weight:600}
+kbd{font:600 12px var(--sans);padding:1px 6px;border:1px solid #334155;border-bottom-width:2px;border-radius:6px;color:var(--head)}
+#ctrl{display:flex;align-items:center;gap:12px;padding:8px;border:1px solid var(--line);border-radius:16px;background:rgba(15,23,42,.9);backdrop-filter:blur(6px)}
+#ctrl button{font:600 15px/1 var(--sans);border-radius:12px;padding:12px 20px;cursor:pointer;border:0;min-height:44px}
+#ctrl .primary{background:#4f46e5;color:#fff;min-width:132px;transition:box-shadow .3s,background .2s}
+#ctrl .primary:hover{background:#4338ca}
+#ctrl .primary.ready{animation:ready 1.6s ease-in-out infinite}
+@keyframes ready{0%,100%{box-shadow:0 0 0 0 rgba(129,140,248,.55)}50%{box-shadow:0 0 0 8px rgba(129,140,248,0)}}
+#ctrl .ghost{background:transparent;color:var(--text);border:1px solid #334155}
+#ctrl .ghost:disabled{opacity:.35;cursor:default}
+#count{font:500 14px var(--sans);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;min-width:80px;text-align:center}
+#dots button{all:unset;cursor:pointer;width:24px;height:24px;display:grid;place-items:center;border-radius:8px}
+#dots button::after{content:"";width:16px;height:3px;border-radius:2px;background:#334155;transition:background .3s,width .3s}
+#dots button[aria-current="true"]::after{background:var(--brand-ink);width:22px}
+#dots button:focus-visible{outline:2px solid rgba(129,140,248,.6);outline-offset:1px}
+#notes{position:fixed;left:0;right:0;bottom:0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 32px}
+#notes[hidden]{display:none}
+#notes p{margin:0;max-width:72ch;font-size:18px;line-height:1.55}
+#notes .meta{font-size:13px;color:var(--muted);white-space:nowrap}
+#msg{position:fixed;inset:0;display:grid;place-content:center;color:var(--muted);font-size:15px;padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px));text-align:center}
+@media (max-width:760px){#foot{grid-template-columns:minmax(0,1fr) auto}#foot .mid{grid-column:1/-1;grid-row:1}#foot .left{grid-row:2}#dots{grid-row:2;align-self:end}#ctrl{width:100%;justify-content:space-between}#ctrl .primary{flex:1}#ctrl .ghost{padding:12px 14px}#howto{font-size:13px}}
+@media (prefers-reduced-motion:reduce){#ctrl .primary.ready{animation:none;box-shadow:0 0 0 3px rgba(129,140,248,.5)}}
+@media (max-width:640px){#howto{display:none!important}#notes{grid-template-columns:1fr}#notes p{font-size:16px}.small{font-size:11px}.cap.y{display:none}}
+@media (prefers-reduced-motion:reduce){.head.pulse{animation:none}#copy .wrap{transition:none}}
+</style>
+</head>
+<body>
+
+<canvas id="stage" tabindex="0" aria-label="A thousand retirement futures for Kim and Lee. Press the right arrow to advance."></canvas>
+<div class="layer" id="axes" aria-hidden="true"></div>
+<div class="layer" aria-hidden="true">
+  <div class="head pulse fade" id="head"></div>
+  <div class="readout fade" id="readout"></div>
+  <div class="mark fade" id="mEarly"></div>
+  <div class="mark fade" id="mMed"></div>
+  <div class="legend fade" id="legend"><span><i></i>Money lasts</span><span><i class="o"></i>Runs short</span></div>
+</div>
+<div id="copy" aria-live="polite"><div class="wrap"><div class="eyebrow" id="eyebrow"></div><h1 id="h1"></h1><p class="sub" id="sub"></p></div></div>
+<div id="foot">
+  <div class="left">
+    <a class="logo" href="/" aria-label="RetirementEdge by OnTrack, home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 64" aria-hidden="true">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4338ca"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+      <rect width="64" height="64" rx="15" fill="url(#lg)"/>
+      <path d="M12 47 C24 45 34 31 52 14 L52 40 C38 45 24 49 12 47 Z" fill="#fff" fill-opacity=".22"/>
+      <path d="M12 47 C24 45 34 31 52 14" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M12 47 C24 49 38 45 52 40" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M12 47 C24 47 36 39 52 27" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="12" cy="47" r="3" fill="#fff"/><circle cx="52" cy="27" r="5" fill="#fbbf24" stroke="#fff" stroke-width="2"/>
+      <text x="80" y="43" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="32" letter-spacing="-0.5"><tspan fill="#e2e8f0" font-weight="500">Retirement</tspan><tspan fill="#a5b4fc" font-weight="700">Edge</tspan></text>
+    </svg></a>
+        <div class="small" id="disc"></div>
+  </div>
+  <div class="mid">
+    <p id="howto">Press <b>Start</b> to play it. Then use <b>Next</b>, tap the chart, or press <kbd>→</kbd> to move through 5 short steps.</p>
+    <div id="ctrl" role="group" aria-label="Step through the story">
+      <button type="button" id="back" class="ghost" aria-label="Previous step">← Back</button>
+      <span id="count" aria-live="polite">Step 1 of 5</span>
+      <button type="button" id="next" class="primary">Start →</button>
+    </div>
+  </div>
+  <nav id="dots" aria-label="Jump to a step"></nav>
+</div>
+<div id="notes" hidden><p id="noteText"></p><div class="meta" id="noteMeta"></div></div>
+<div id="msg">Loading 1,000 futures…</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { Line2 } from 'three/addons/lines/Line2.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
+
+const msg=document.getElementById('msg');
+let DATA;
+try{const r=await fetch('futures.json');if(!r.ok)throw new Error(r.status);DATA=await r.json()}
+catch(e){msg.textContent='The 1,000 futures didn’t load. Reload the page to try again.';throw e}
+msg.remove();
+
+/* ---------- engine data: 1,000 simulations of Kim & Lee, quarterly, A$ thousands in today's dollars ---------- */
+const meta=DATA.meta, P=DATA.paths, N=P.length, A0=meta.startAgeMonths[0]/12, XMAX=106, QMAX=Math.floor((XMAX-A0)*4);
+const ageAt=q=>A0+q/4, RET=A0+meta.retirementMonth[0]/12;
+const LEN=P.map(p=>p.v.length-1), RUIN=P.map(p=>p.r>=0?1:0);
+const SHORT=RUIN.reduce((a,b)=>a+b,0), SCORE=Math.round(meta.score);
+const peak=P.map(p=>Math.max(...p.v)).sort((a,b)=>a-b);
+const CAP=Math.ceil(peak[Math.floor(N*.97)]/250)*250; // A$ thousands, top of the chart
+const ruinAges=P.filter((p,i)=>RUIN[i]).map(p=>A0+p.r/12).sort((a,b)=>a-b);
+const EARLY=Math.floor(ruinAges[0]), MED=Math.round(ruinAges[ruinAges.length>>1]);
+// the one future: money lasts, a long retirement, a visible dip
+let HERO=0;{const c=[];P.forEach((p,i)=>{if(RUIN[i])return;const end=ageAt(LEN[i]),lo=Math.min(...p.v.slice(12));if(end>=91&&end<=97&&lo>60)c.push([p.v[LEN[i]],i])});
+  c.sort((a,b)=>a[0]-b[0]);HERO=c.length?c[c.length>>1][1]:RUIN.indexOf(0)}
+const HEROEND=Math.floor(ageAt(LEN[HERO])), HEROPEAK=Math.max(...P[HERO].v);
+
+const DUR=2.4, DELAY=new Float32Array(N).fill(1e6);
+const R=(s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296})(42);
+{const o=[...Array(N).keys()].filter(i=>i!==HERO);for(let i=o.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[o[i],o[j]]=[o[j],o[i]]}
+  o.forEach((idx,k)=>{DELAY[idx]=k<20?k*.11:2.2+2.6*Math.pow((k-20)/(o.length-20),.85)})}
+const RANK=new Float32Array(N);[...Array(N).keys()].sort((a,b)=>RUIN[a]-RUIN[b]||(RUIN[a]?P[b].r-P[a].r:P[b].v[LEN[b]]-P[a].v[LEN[a]])).forEach((v,k)=>RANK[v]=k);
+
+const money=k=>k>=1000?'A$'+(k/1000).toFixed(k%1000?2:0).replace(/\.?0+$/,'')+'M':'A$'+Math.round(k)+'k';
+const dollars=v=>'A$'+Math.round(v).toLocaleString('en-AU');
+const kimAge=Math.floor(A0), leeAge=Math.floor(meta.startAgeMonths[1]/12);
+
+/* ---------- the words (brand voice: plain, specific, never frightening) ---------- */
+const BEATS=[
+ {e:`Kim and Lee, ${kimAge} and ${leeAge}`,h:`${dollars(P[0].v[0]*1000)} in super and savings. <em>A$6,800</em> a month in retirement.`,
+  s:`Kim stops work at 65 and Lee at 64. They own their home. Will their money last?`,
+  n:`This is Kim and Lee from the planner’s demo. Between them they have ${dollars(P[0].v[0]*1000)} in super and cash, they own their home, and they want to spend A$6,800 a month in retirement, in today’s dollars. The question every couple asks: will it last?`},
+ {e:'One future',h:`This is <em>one</em> way the markets could go.`,
+  s:`Super grows until they stop work, peaking near ${money(HEROPEAK)}. Then it tops up the Age Pension. In this future the money lasts as long as either of them lives, until Kim turns ${HEROEND}.`,
+  n:`Here’s one future from the engine. Super keeps growing while they work, then they draw on it alongside the Age Pension. Markets wander, so the balance does too. In this one the money lasts to the end of the plan, when Kim turns ${HEROEND}. But it’s one draw, and nobody gets to choose theirs.`},
+ {e:'1,000 futures',h:`Now run it <em>1,000</em> times.`,
+  s:`<span class="num" id="cStarted">1</span> futures · <span class="num short" id="cOut">0</span> where money runs short`,
+  n:`So the engine runs it 1,000 times: same couple, same spending, 1,000 different market histories and lifespans. Each line ends when the last of them dies. The lines that turn pink are futures where money runs short first.`},
+ {e:'Where money runs short',h:`When money runs short, it’s <em>late</em> in life.`,
+  s:`The earliest is when Kim turns ${EARLY}, and half come after Kim turns ${MED}. The Age Pension keeps paying after their savings run out.`,
+  n:`Drop each of those futures onto the floor at the age the money ran short. The earliest is when Kim turns ${EARLY}; half come after Kim turns ${MED}. That means a tighter budget late in life on the Age Pension, not running dry soon after retiring.`},
+ {e:'Your result',h:`<em>${SCORE}</em> out of 100.`,
+  s:`Each dot is 10 futures. In ${SCORE} of every 100, Kim and Lee’s money lasts as long as either of them lives. That’s their readiness score in RetirementEdge.`,
+  n:`Fold the 1,000 futures into 100 dots. In ${SCORE} of them the money lasts. That’s the readiness score the planner shows: a count of futures, not a promise. It’s an estimate, not advice, and the planner shows what would move it.`}
+];
+const SHORTDISC=`RetirementEdge engine, 1,000 simulations of a sample couple, today’s dollars. An estimate, not advice.`;
+const LONGDISC=`RetirementEdge engine, Australian rules, 1,000 simulations (seed 42), run ${new Date(meta.run).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})} on a sample couple from the planner’s demo. Super, cash and investments in today’s dollars. An estimate, not advice.`;
+
+/* ---------- three.js stage ---------- */
+const canvas=document.getElementById('stage');
+let renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true})}catch(e){document.getElementById('h1').textContent='This scene needs WebGL, which this browser has turned off.';throw e}
+renderer.setClearColor(0x020617,1);renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+const scene=new THREE.Scene(), camera=new THREE.OrthographicCamera(0,1,1,0,-1,1);
+const cLine=new THREE.Color('#818cf8'), cShort=new THREE.Color('#fda4af'), cDot=new THREE.Color('#a5b4fc');
+
+const crowdGeo=new THREE.BufferGeometry();
+const crowdMat=new THREE.ShaderMaterial({
+  uniforms:{uT:{value:-10},uDur:{value:DUR},uA:{value:0},uCapY:{value:0},uLine:{value:cLine},uShort:{value:cShort}},
+  vertexShader:`attribute float aT,aDelay,aEnd,aRuin;varying float vT,vDelay,vEnd,vRuin,vY;
+    void main(){vT=aT;vDelay=aDelay;vEnd=aEnd;vRuin=aRuin;vY=position.y;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`uniform float uT,uDur,uA,uCapY;uniform vec3 uLine,uShort;varying float vT,vDelay,vEnd,vRuin,vY;
+    void main(){float p=clamp((uT-vDelay)/uDur,0.,1.);if(vT>p+.0005||uA<.002)discard;
+      float warm=vRuin*smoothstep(vEnd-.12,vEnd,vT);
+      vec3 c=mix(uLine,uShort,warm);float a=uA*mix(.032,.24,warm);
+      float head=(1.-step(.999,p))*smoothstep(p-.05,p,vT);c=mix(c,vec3(.8,.83,1.),head*.6);a+=head*uA*.3;
+      a*=1.-smoothstep(uCapY-60.,uCapY+20.,vY);gl_FragColor=vec4(c,a);}`,
+  transparent:true,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending});
+scene.add(new THREE.LineSegments(crowdGeo,crowdMat));
+
+const dotGeo=new THREE.BufferGeometry();
+const dotMat=new THREE.ShaderMaterial({
+  uniforms:{uT:{value:-10},uDur:{value:DUR},uHist:{value:0},uGrid:{value:0},uSurv:{value:0},uPx:{value:1},uCell:{value:20},uHistSize:{value:5},uDot:{value:cDot},uShort:{value:cShort}},
+  vertexShader:`attribute vec2 aHist,aGrid;attribute float aDelay,aEnd,aRuin,aRank;
+    uniform float uT,uDur,uHist,uGrid,uSurv,uPx,uCell,uHistSize;varying float vA,vRuin,vSize;
+    float ease(float x){x=clamp(x,0.,1.);return x*x*(3.-2.*x);}
+    void main(){float p=clamp((uT-aDelay)/uDur,0.,1.);float born=step(aEnd-.0005,p);
+      float r=aRank/1000.;float sH=ease(uHist*1.7-r*.7)*aRuin;float sG=ease(uGrid*1.7-r*.7);
+      vec2 pos=mix(mix(position.xy,aHist,sH),aGrid,sG);
+      vA=max(born,step(.001,uGrid))*(aRuin>.5?1.:mix(uSurv,1.,sG));vRuin=aRuin;
+      float size=aRuin>.5?mix(mix(6.,uHistSize,sH),uCell,sG):mix(3.5,uCell,sG);vSize=size;
+      gl_PointSize=size*uPx;gl_Position=projectionMatrix*modelViewMatrix*vec4(pos,0.,1.);}`,
+  fragmentShader:`uniform vec3 uDot,uShort;varying float vA,vRuin,vSize;
+    void main(){float r=length(gl_PointCoord-.5);float aa=1./max(vSize,1.);
+      float a=(1.-smoothstep(.5-aa,.5,r))*vA;
+      if(vRuin>.5&&vSize>9.){float inner=.5-2.2/vSize;a*=smoothstep(inner-aa,inner,r);} // hollow ring, like the planner's answer screen
+      if(a<.01)discard;gl_FragColor=vec4(vRuin>.5?uShort:uDot,a);}`,
+  transparent:true,depthTest:false,depthWrite:false});
+scene.add(new THREE.Points(dotGeo,dotMat));
+
+const heroMat=new LineMaterial({color:0xa5b4fc,linewidth:3,transparent:true,opacity:1,depthTest:false});
+let heroGeo=new LineGeometry(), hero=new Line2(heroGeo,heroMat);hero.renderOrder=2;scene.add(hero);
+
+/* ---------- layout: one mapping from (Kim's age, A$k) to screen pixels ---------- */
+let VW=1,VH=1,L={};
+const sx=age=>L.left+(age-A0)/(XMAX-A0)*(L.right-L.left);
+const sy=k=>L.zero-Math.min(k,CAP*1.15)/CAP*(L.zero-L.top);
+const wy=y=>VH-y;
+function layout(){
+  VW=innerWidth;VH=innerHeight;const narrow=VW<640;document.getElementById('disc').textContent=narrow?SHORTDISC:LONGDISC;
+  L={left:narrow?16:Math.max(72,VW*.08),right:VW-(narrow?44:Math.max(64,VW*.06)),top:VH*(narrow?.42:.4),zero:VH-(VW<760?(narrow?250:230):Math.max(190,VH*.22))};
+  renderer.setSize(VW,VH,false);camera.right=VW;camera.top=VH;camera.updateProjectionMatrix();
+  heroMat.resolution.set(VW,VH);dotMat.uniforms.uPx.value=renderer.getPixelRatio();crowdMat.uniforms.uCapY.value=wy(L.top);
+
+  let segs=0;for(let i=0;i<N;i++)segs+=LEN[i];
+  const pos=new Float32Array(segs*6),aT=new Float32Array(segs*2),aD=new Float32Array(segs*2),aE=new Float32Array(segs*2),aR=new Float32Array(segs*2);
+  let v=0;for(let i=0;i<N;i++){const e=LEN[i]/QMAX,d=i===HERO?1e6:DELAY[i];for(let k=0;k<LEN[i];k++)for(const j of [k,k+1]){
+    pos[v*3]=sx(ageAt(j));pos[v*3+1]=wy(sy(P[i].v[j]));aT[v]=j/QMAX;aD[v]=d;aE[v]=e;aR[v]=RUIN[i];v++}}
+  crowdGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  for(const [n,a] of [['aT',aT],['aDelay',aD],['aEnd',aE],['aRuin',aR]])crowdGeo.setAttribute(n,new THREE.BufferAttribute(a,1));
+  crowdGeo.computeBoundingSphere();
+
+  const pxYear=(L.right-L.left)/(XMAX-A0), sp=Math.min(6.5,Math.max(3,pxYear/4)), cols=Math.max(1,Math.floor(pxYear/sp));
+  dotMat.uniforms.uHistSize.value=sp*.86;
+  const cell=Math.min((L.zero-L.top+70)/10.4,(L.right-L.left)/10.4,46);dotMat.uniforms.uCell.value=cell*.62;
+  const gx=(L.left+L.right)/2, gy=(L.top+L.zero)/2-14;
+  const p3=new Float32Array(N*3),h=new Float32Array(N*2),g=new Float32Array(N*2),d=new Float32Array(N),e=new Float32Array(N),r=new Float32Array(N),rk=new Float32Array(N);
+  const stack={};let tallest=0;
+  [...Array(N).keys()].filter(i=>RUIN[i]).sort((a,b)=>P[a].r-P[b].r).forEach(i=>{const yr=Math.min(XMAX-1,Math.floor(A0+P[i].r/12)),n=stack[yr]=(stack[yr]||0)+1,c=(n-1)%cols,row=Math.floor((n-1)/cols);
+    h[i*2]=sx(yr)+(c+.5)*sp;h[i*2+1]=wy(L.zero-sp*.6-row*sp);tallest=Math.max(tallest,row+1)});
+  for(let i=0;i<N;i++){p3[i*3]=sx(ageAt(LEN[i]));p3[i*3+1]=wy(sy(P[i].v[LEN[i]]));
+    if(!RUIN[i]){h[i*2]=p3[i*3];h[i*2+1]=p3[i*3+1]}
+    const c=Math.floor(RANK[i]/10);g[i*2]=gx+(c%10-4.5)*cell;g[i*2+1]=wy(gy+(Math.floor(c/10)-4.5)*cell);
+    d[i]=i===HERO?-1:DELAY[i];e[i]=LEN[i]/QMAX;r[i]=RUIN[i];rk[i]=RANK[i]}
+  dotGeo.setAttribute('position',new THREE.BufferAttribute(p3,3));dotGeo.setAttribute('aHist',new THREE.BufferAttribute(h,2));dotGeo.setAttribute('aGrid',new THREE.BufferAttribute(g,2));
+  for(const [n,a] of [['aDelay',d],['aEnd',e],['aRuin',r],['aRank',rk]])dotGeo.setAttribute(n,new THREE.BufferAttribute(a,1));
+  dotGeo.computeBoundingSphere();
+
+  const hp=[];for(let j=0;j<=LEN[HERO];j++)hp.push(sx(ageAt(j)),wy(sy(P[HERO].v[j])),0);
+  heroGeo.dispose();heroGeo=new LineGeometry();heroGeo.setPositions(hp);hero.geometry=heroGeo;hero.computeLineDistances();
+
+  const ax=document.getElementById('axes');let html=`<div class="base" style="left:${L.left}px;width:${L.right-L.left}px;top:${L.zero}px"></div>`;
+  const stepK=CAP>1500?500:250;for(let k=stepK;k<=CAP;k+=stepK)html+=`<div class="grid" style="left:${L.left}px;width:${L.right-L.left}px;top:${sy(k)}px"></div><div class="ylab" style="left:${L.right}px;top:${sy(k)}px">${money(k)}</div>`;
+  const step=narrow?10:5;for(let a=Math.ceil(A0/step)*step;a<=XMAX;a+=step)html+=`<div class="tick" style="left:${sx(a)}px;top:${L.zero+10}px">${a}</div>`;
+  html+=`<div class="ret" style="left:${sx(RET)}px;top:${L.top-8}px;height:${L.zero-L.top+8}px"></div><div class="cap" style="left:${sx(RET)+6}px;top:${L.top-8}px">Kim stops work</div>`;
+  html+=`<div class="cap" style="left:${L.left}px;top:${L.zero+28}px">Kim’s age</div><div class="cap y" style="right:${VW-L.right}px;top:${L.top-30}px">Super, cash and investments, today’s dollars</div>`;
+  ax.innerHTML=html;
+  const top=L.zero-tallest*sp-10;
+  Object.assign(document.getElementById('mEarly').style,{left:sx(EARLY)+sp*cols/2+'px',top:top-(narrow?22:0)+'px'});
+  Object.assign(document.getElementById('mMed').style,{left:sx(MED)+sp*cols/2+'px',top:top+'px'});
+  document.getElementById('mEarly').textContent='earliest '+EARLY;document.getElementById('mMed').textContent='half after '+MED;
+  Object.assign(document.getElementById('legend').style,{left:gx-4.5*cell-cell*.31+'px',top:gy+5*cell+8+'px'});
+}
+
+/* ---------- steps ---------- */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let beat=0,hero0=null,crowd0=null,touched=false;
+const now=()=>performance.now()/1000;
+const TARGET=[{h:0,c:0,s:0,H:0,G:0},{h:1,c:0,s:0,H:0,G:0},{h:.95,c:1,s:.6,H:0,G:0},{h:.3,c:.3,s:0,H:1,G:0},{h:.1,c:.1,s:0,H:1,G:1}];
+const cur={h:0,c:0,s:0,H:0,G:0};
+const copy=document.getElementById('copy'),dots=document.getElementById('dots');
+BEATS.forEach((b,i)=>{const btn=document.createElement('button');btn.setAttribute('aria-label',`Step ${i+1}: ${b.e}`);btn.onclick=ev=>{ev.stopPropagation();jump(i)};dots.append(btn)});
+function words(){
+  copy.classList.add('out');
+  setTimeout(()=>{const b=BEATS[beat];document.getElementById('eyebrow').textContent=b.e;document.getElementById('h1').innerHTML=b.h;document.getElementById('sub').innerHTML=b.s;copy.classList.remove('out')},reduce?0:320);
+  [...dots.children].forEach((d,i)=>d.setAttribute('aria-current',i===beat));
+  document.getElementById('noteText').textContent=BEATS[beat].n;document.getElementById('noteMeta').textContent=`${beat+1} / ${BEATS.length}`;
+  document.getElementById('axes').style.opacity=beat===4?.15:1;
+  for(const id of ['mEarly','mMed'])document.getElementById(id).classList.toggle('fade',beat!==3);
+  document.getElementById('legend').classList.toggle('fade',beat!==4);
+  if(typeof controls==='function')controls();
+}
+function settle(){const t=now()-100;if(beat>=1&&(hero0===null||reduce))hero0=t;if(beat>=2&&(crowd0===null||reduce))crowd0=t;if(beat<2)crowd0=null;if(beat<1)hero0=null}
+function next(){if(beat>=BEATS.length-1)return;beat++;if(beat===1)hero0=now();if(beat===2){if(hero0===null||now()-hero0<4.6)hero0=now()-100;crowd0=now()}settle();touch();words()}
+function prev(){if(beat<=0)return;beat--;settle();touch();words()}
+function jump(i){if(i===beat)return;beat=i;hero0=crowd0=null;settle();touch();words()}
+function touch(){if(!touched){touched=true}}
+const bNext=document.getElementById('next'),bBack=document.getElementById('back'),howto=document.getElementById('howto');
+const SETTLE=[0,5.2,7.6,2.4,2.4];let readyAt=0;
+bNext.addEventListener('click',e=>{e.stopPropagation();if(beat===BEATS.length-1)jump(0);else next()});
+bBack.addEventListener('click',e=>{e.stopPropagation();prev()});
+function controls(){const last=beat===BEATS.length-1;
+  bNext.textContent=beat===0?'Start →':last?'Watch again ↺':'Next →';bNext.setAttribute('aria-label',beat===0?'Start':last?'Watch again from the start':'Next step');
+  bBack.disabled=beat===0;document.getElementById('count').textContent=`Step ${beat+1} of ${BEATS.length}`;
+  howto.style.display=beat===0?'':'none';readyAt=now()+(reduce?0:SETTLE[beat]);bNext.classList.remove('ready')}
+addEventListener('keydown',e=>{
+  if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();next()}
+  else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();prev()}
+  else if(e.key==='n'||e.key==='N'){const n=document.getElementById('notes');n.hidden=!n.hidden}
+  else if(e.key==='Home')jump(0);else if(e.key==='End')jump(BEATS.length-1)});
+let tx=null;
+canvas.addEventListener('pointerdown',e=>{tx=e.clientX});
+canvas.addEventListener('pointerup',e=>{const d=tx===null?0:e.clientX-tx;tx=null;if(d>50)prev();else next()});
+
+/* ---------- frame loop ---------- */
+const head=document.getElementById('head'),readout=document.getElementById('readout');
+let last=now();
+function frame(){
+  const t=now(),dt=Math.min(.05,t-last);last=t;const T=TARGET[beat],k=1-Math.exp(-dt*(reduce?60:3.2));
+  for(const key of ['h','c','s'])cur[key]+=(T[key]-cur[key])*k;
+  for(const key of ['H','G']){const sp=reduce?99:1/1.9;cur[key]+=Math.sign(T[key]-cur[key])*Math.min(Math.abs(T[key]-cur[key]),dt*sp)}
+  const HL=LEN[HERO],heroP=hero0===null?0:Math.min(1,(t-hero0)/5), ct=crowd0===null?-10:t-crowd0;
+  heroGeo.instanceCount=Math.floor(heroP*HL);heroMat.opacity=cur.h;hero.visible=heroP>0&&cur.h>.01;
+  crowdMat.uniforms.uT.value=ct;crowdMat.uniforms.uA.value=cur.c;
+  dotMat.uniforms.uT.value=ct;dotMat.uniforms.uHist.value=cur.H;dotMat.uniforms.uGrid.value=cur.G;dotMat.uniforms.uSurv.value=cur.s;
+  const f=heroP*HL,j=Math.min(HL-1,Math.floor(f)),u=f-j,v=P[HERO].v[j]*(1-u)+P[HERO].v[j+1]*u,age=ageAt(f);
+  head.style.left=sx(age)+'px';head.style.top=sy(v)+'px';readout.style.left=sx(age)+'px';readout.style.top=sy(v)+'px';
+  head.classList.toggle('pulse',beat===0);head.classList.toggle('fade',beat>=3);readout.classList.toggle('fade',beat>=2);
+  readout.innerHTML=beat===0?`${money(v)} <span>today</span>`:`${money(v)} <span>· Kim ${Math.floor(age)}</span>`;
+  if(beat===2){let s=1,o=0;for(let i=0;i<N;i++){if(i===HERO)continue;const p=(ct-DELAY[i])/DUR;if(p>0)s++;if(RUIN[i]&&p>=LEN[i]/QMAX)o++}
+    const a=document.getElementById('cStarted'),c=document.getElementById('cOut');if(a){a.textContent=s.toLocaleString('en-AU');c.textContent=o.toLocaleString('en-AU')}}
+  bNext.classList.toggle('ready',t>=readyAt);
+  renderer.render(scene,camera);requestAnimationFrame(frame);
+}
+layout();words();controls();canvas.focus({preventScroll:true});
+addEventListener('resize',layout);
+requestAnimationFrame(frame);
+</script>
+
+</body>
+</html>
