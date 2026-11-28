@@ -146,6 +146,7 @@
   .cell p{margin:0;color:var(--ink-2);font-size:.96rem}
   /* ---------- toy ---------- */
   .toy{background:var(--paper-2);border-block:1px solid var(--ink)}
+  .toy .btn.walk{margin-top:18px}
   .toybox{display:grid;grid-template-columns:1fr 1.25fr;gap:48px;align-items:center;margin-top:40px}
   .dial{font-family:var(--serif);font-weight:900;font-size:clamp(5rem,13vw,10rem);line-height:.85;letter-spacing:-.05em;color:var(--blue);font-variant-numeric:tabular-nums}
   .dial small{display:block;font-size:max(1.05rem,.15em);line-height:1.2;color:var(--ink);letter-spacing:-.01em;font-weight:700;margin-top:10px;max-width:22ch}
@@ -217,7 +218,7 @@
     <div class="eyebrow">RetirementEdge · the stochastic retirement engine</div>
     <h1>We don't predict the future. <em>We run all of them.</em></h1>
     <p class="lede">Every line behind this text is a possible retirement, generated live by a miniature of our engine. The real one runs thousands of futures per household, month by month, through every tax rule, pension test and market crash history can teach it.</p>
-    <div class="row"><a class="btn" href="#pipeline">See how the future is built ↓</a><a class="btn ghost" href="#contact">Book a demo</a></div>
+    <div class="row"><a class="btn" href="#pipeline">See how the future is built ↓</a><a class="btn ghost" href="/futures/">Watch 1,000 futures play out →</a><a class="btn ghost" href="#contact">Book a demo</a></div>
   </div>
 </header>
 
@@ -312,6 +313,7 @@
         <div class="ctl"><label for="age"><span>RETIREMENT AGE</span><span id="ageV"></span></label><input type="range" id="age" min="58" max="70" step="1" value="65"></div>
         <div class="ctl"><label for="risk"><span>GROWTH ASSETS</span><span id="riskV"></span></label><input type="range" id="risk" min="20" max="90" step="5" value="60"></div>
         <p class="fine">Toy model: $750k at retirement plus a $22k public pension from 67, fat-tailed returns with stress regimes. The real engine adds tax, pensions, means tests, mortality, couples, goals and real market history.</p>
+        <a class="btn walk" href="/futures/">See a real engine run, step by step →</a>
       </div>
       <canvas id="toyCanvas" aria-label="Fan of simulated wealth paths"></canvas>
     </div>
